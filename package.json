@@ -1,0 +1,69 @@
+{
+  "name": "online_filings_to_do_list",  
+  "author": "Tobi Williams",
+  "license": "ISC",
+  "version": "1.0.0",
+  "description": "Online Filings - To-Do List take home exercise",
+  "nodemonConfig": {
+    "exec": "npm run dev",
+    "watch": [
+      "server/*",
+      "public/*"
+    ],
+    "ignore": [
+      "**/__tests__/**",
+      "*.test.js",
+      "*.spec.js"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-dev-tables": "babel-node ./app/db/dev/dbConnection createAllTables",
+    "start-dev": "nodemon --watch . --exec babel-node -- ./app/server",
+    "start": "node ./dist-server/server",
+    "transpile": "babel ./app --out-dir dist-server",
+    "clean": "rimraf dist-server",
+    "move-env": "ncp .env ./dist-server/.env",
+    "build": "npm-run-all clean transpile move-env",
+    "dev": "SET NODE_ENV=development & npm-run-all build start",
+    "prod": "SET NODE_ENV=production & npm-run-all build start",
+    "watch:dev": "nodemon"
+  },
+  "keywords": [
+    "TCF"
+  ],
+
+  "dependencies": {
+    "@babel/polyfill": "^7.10.1",
+    "axios": "^0.21.1",
+    "babel-node": "^0.0.1-security",
+    "babel-preset-stage-0": "^6.24.1",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "make-runnable": "^1.3.6",
+    "moment": "^2.29.4",
+    "mongodb": "^5.1.0",
+    "morgan": "~1.9.1",
+    "ncp": "^2.0.0",
+    "nodemon": "^2.0.20",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "babel-watch": "^7.0.0"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  }
+}
