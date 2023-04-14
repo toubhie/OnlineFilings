@@ -4,7 +4,9 @@ import {
     updateProject,
     getAllProjects,
     deleteProject,
-    assignTaskToProject
+    assignTaskToProject,
+    filterTasksByProjectName,
+    sortProjectsByDates
 } from '../controllers/projectsController';
 
 const router = express.Router();
@@ -17,7 +19,10 @@ router.get('/', getAllProjects);
 
 router.delete('/:id', deleteProject);
 
-router.post('/assign', assignTaskToProject);
+router.post('/:projectId/tasks/:taskId', assignTaskToProject);
 
+router.get('/:projectName/tasks', filterTasksByProjectName);
+
+router.get('/sort', sortProjectsByDates);
 
 export default router;

@@ -46,9 +46,27 @@ const checkIfNullOrUndefined = (input) => {
   return input;
 };
 
+/**
+   * Get start of today's timestamp helper method
+   * @returns {String} returns current timestamp
+   */
+const getTodayStartTimeStamp = () => {
+  return moment().startOf('day').format('YYYY-MM-DD HH:mm:ss');
+};
+
+/**
+   * Get end of today's timestamp helper method
+   * @returns {String} returns current timestamp
+   */
+const getTodayEndTimeStamp = () => {
+  return moment().endOf('day').format('YYYY-MM-DD HH:mm:ss');
+};
+
 export {
   isEmpty,
   empty,
   getCurrentTimeStamp,
-  checkIfNullOrUndefined
+  checkIfNullOrUndefined,
+  getTodayStartTimeStamp,
+  getTodayEndTimeStamp
 };

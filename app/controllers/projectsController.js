@@ -13,7 +13,6 @@ import moment from 'moment';
 
 const dbClient = getClient();
 
-
 /**
   * Method to create a new project
   * @param {object} req
@@ -38,16 +37,16 @@ const createProject = async (req, res) => {
     return res.status(status.notfound).send(errorMessage);
   }
 
-  if (requestData.endDate == null || requestData.endDate == undefined) {
-    errorMessage.message = 'An end date must be provided';
+  if (requestData.dueDate == null || requestData.dueDate == undefined) {
+    errorMessage.message = 'An due date must be provided';
     errorMessage.status = status.notfound;
 
     return res.status(status.notfound).send(errorMessage);
   }
 
-  // Check is start date is greater end date
-  if (moment(requestData.startDate).isAfter(moment(requestData.endDate))) {
-    errorMessage.message = 'End date must be greater than start date';
+  // Check is start date is greater due date
+  if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
+    errorMessage.message = 'due date must be greater than start date';
     errorMessage.status = status.notfound;
 
     return res.status(status.notfound).send(errorMessage);
@@ -61,7 +60,7 @@ const createProject = async (req, res) => {
       description: requestData.description,
       status: constants.statusStarted,
       startDate: (requestData.startDate).trim(),
-      endDate: (requestData.endDate).trim(),
+      dueDate: (requestData.dueDate).trim(),
       createdAt: getCurrentTimeStamp(),
     };
 
@@ -126,16 +125,16 @@ const updateProject = async (req, res) => {
     return res.status(status.notfound).send(errorMessage);
   }
 
-  if (requestData.endDate == null || requestData.endDate == undefined) {
-    errorMessage.message = 'An end date must be provided';
+  if (requestData.dueDate == null || requestData.dueDate == undefined) {
+    errorMessage.message = 'An due date must be provided';
     errorMessage.status = status.notfound;
 
     return res.status(status.notfound).send(errorMessage);
   }
 
-  // Check is start date is greater end date
-  if (moment(requestData.startDate).isAfter(moment(requestData.endDate))) {
-    errorMessage.message = 'End date must be greater than start date';
+  // Check is start date is greater due date
+  if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
+    errorMessage.message = 'due date must be greater than start date';
     errorMessage.status = status.notfound;
 
     return res.status(status.notfound).send(errorMessage);
@@ -162,7 +161,7 @@ const updateProject = async (req, res) => {
         description: requestData.description,
         status: (requestData.status).trim(),
         startDate: (requestData.startDate).trim(),
-        endDate: (requestData.endDate).trim(),
+        dueDate: (requestData.dueDate).trim(),
         updatedAt: getCurrentTimeStamp(),
       }
     };
@@ -403,23 +402,23 @@ const filterTasksByProjectName = async (req, res) => {
 }
 
 /**
-  * Method to sort projects by dates (startDate & endDate)
+  * Method to sort projects by dates (startDate & dueDate)
   * @param {object} req
   * @param {object} res
   * @returns {object} JSON object
   */
 const sortProjectsByDates = async (req, res) => {
   let successMessage = { status: 'success' };
-  const requestParams = req.params;
+  const queryParams = req.query;
 
-  if (requestParams.sortParameter == null || requestParams.sortParameter == undefined) {
+  if (queryParams.sortParameter == null || queryParams.sortParameter == undefined) {
       errorMessage.message = 'A sort parameter must be provided';
       errorMessage.status = status.notfound;
 
       return res.status(status.notfound).send(errorMessage);
   }
 
-  const sortParameter = (requestParams.sortParameter).trim();
+  const sortParameter = (queryParams.sortParameter).trim();
 
   try {
       initMongoDBConnection();
@@ -428,10 +427,10 @@ const sortProjectsByDates = async (req, res) => {
 
       if (sortParameter === "startDate") {
           sortCriteria.startDate = 1; // sort by ascending start date
-      } else if (sortParameter === "endDate") {
-          sortCriteria.endDate = -1; // sort by descending end date
+      } else if (sortParameter === "dueDate") {
+          sortCriteria.dueDate = -1; // sort by descending due date
       } else {
-          errorMessage.message = `Invalid sort parameter. Can only be 'startDate' or 'endDate'`;
+          errorMessage.message = `Invalid sort parameter. Can only be 'startDate' or 'dueDate'`;
           errorMessage.status = status.bad;
 
           return res.status(status.bad).send(errorMessage);

@@ -38,16 +38,16 @@ const createTask = async (req, res) => {
         return res.status(status.notfound).send(errorMessage);
     }
 
-    if (requestData.endDate == null || requestData.endDate == undefined) {
-        errorMessage.message = 'An end date must be provided';
+    if (requestData.dueDate == null || requestData.dueDate == undefined) {
+        errorMessage.message = 'An due date must be provided';
         errorMessage.status = status.notfound;
 
         return res.status(status.notfound).send(errorMessage);
     }
 
-    // Check is start date is greater end date
-    if (moment(requestData.startDate).isAfter(moment(requestData.endDate))) {
-        errorMessage.message = 'End date must be greater than start date';
+    // Check is start date is greater due date
+    if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
+        errorMessage.message = 'due date must be greater than start date';
         errorMessage.status = status.notfound;
 
         return res.status(status.notfound).send(errorMessage);
@@ -83,7 +83,7 @@ const createTask = async (req, res) => {
             status: constants.statusPending,
             priority: (requestData.priority).trim(),
             startDate: (requestData.startDate).trim(),
-            endDate: (requestData.endDate).trim(),
+            dueDate: (requestData.dueDate).trim(),
             assignedTo: (requestData.assignedTo).trim(),
             projectId: (requestData.projectId).trim(),
             createdAt: getCurrentTimeStamp(),
@@ -143,16 +143,16 @@ const updateTask = async (req, res) => {
         return res.status(status.notfound).send(errorMessage);
     }
 
-    if (requestData.endDate == null || requestData.endDate == undefined) {
-        errorMessage.message = 'An end date must be provided';
+    if (requestData.dueDate == null || requestData.dueDate == undefined) {
+        errorMessage.message = 'An due date must be provided';
         errorMessage.status = status.notfound;
 
         return res.status(status.notfound).send(errorMessage);
     }
 
-    // Check is start date is greater end date
-    if (moment(requestData.startDate).isAfter(moment(requestData.endDate))) {
-        errorMessage.message = 'End date must be greater than start date';
+    // Check is start date is greater due date
+    if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
+        errorMessage.message = 'due date must be greater than start date';
         errorMessage.status = status.notfound;
 
         return res.status(status.notfound).send(errorMessage);
@@ -179,7 +179,7 @@ const updateTask = async (req, res) => {
                 description: requestData.description,
                 priority: (requestData.priority).trim(),
                 startDate: (requestData.startDate).trim(),
-                endDate: (requestData.endDate).trim(),
+                dueDate: (requestData.dueDate).trim(),
                 assignedTo: (requestData.assignedTo).trim(),
                 updatedAt: getCurrentTimeStamp(),
             }
@@ -447,7 +447,7 @@ const filterTasksByStatus = async (req, res) => {
 }
 
 /**
-  * Method to sort tasks by start date, end date and date completed
+  * Method to sort tasks by start date, due date and date completed
   * @param {object} req
   * @param {object} res
   * @returns {object} JSON object
@@ -472,12 +472,12 @@ const sortTasks = async (req, res) => {
 
         if (sortParameter === "startDate") {
             sortCriteria.startDate = 1; // sort by ascending start date
-        } else if (sortParameter === "endDate") {
-            sortCriteria.endDate = -1; // sort by descending end date
+        } else if (sortParameter === "dueDate") {
+            sortCriteria.dueDate = -1; // sort by descending due date
         } else if (sortParameter === "dateCompleted") {
             sortCriteria.dateCompleted = -1; // sort by descending date completed
         } else {
-            errorMessage.message = `Invalid sort parameter. Can only be 'startDate', 'endDate' or 'dateCompleted'`;
+            errorMessage.message = `Invalid sort parameter. Can only be 'startDate', 'dueDate' or 'dateCompleted'`;
             errorMessage.status = status.bad;
 
             return res.status(status.bad).send(errorMessage);
