@@ -146,8 +146,6 @@ const updateProject = async (req, res) => {
 
     const projectId = req.params.id;
 
-    const query = { id: projectId };
-
     // Check if ID exists
     const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
@@ -169,7 +167,7 @@ const updateProject = async (req, res) => {
       }
     };
 
-    await dbClient.collection(constants.projectCollection).updateOne(query, data, (err, collection) => {
+    await dbClient.collection(constants.projectCollection).updateOne({ _id: new ObjectId(projectId) }, data, (err, collection) => {
       if (err) {
         errorMessage.message = 'An error occurred while updating project';
         errorMessage.status = status.error;
@@ -203,11 +201,7 @@ const getAllProjects = async (req, res) => {
     initMongoDBConnection();
 
     const response = await dbClient.collection(constants.projectCollection).find({}).toArray(function (err, result) {
-      if (err) {
-        return err
-      } else {
-        return result
-      }
+      return err || result;
     })
 
     successMessage.message = 'All projects';
@@ -244,8 +238,6 @@ const deleteProject = async (req, res) => {
     initMongoDBConnection();
 
     const projectId = req.params.id;
-
-    const query = { id: projectId };
 
     // Check if ID exists
     const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
@@ -291,18 +283,174 @@ const assignTaskToProject = async (req, res) => {
   const requestData = req.body;
 
   try {
-    //Check if the project id is passed
-    if (req.params.id == null || req.params.id == undefined) {
-      errorMessage.message = 'A project id name must be provided';
+    //Check if the task id is passed
+    if (req.params.taskId == null || req.params.taskId == undefined) {
+      errorMessage.message = 'A task id must be provided';
       errorMessage.status = status.notfound;
 
       return res.status(status.notfound).send(errorMessage);
     }
 
+    //Check if the project id is passed
+    if (req.params.projectId == null || req.params.projectId == undefined) {
+      errorMessage.message = 'A project id must be provided';
+      errorMessage.status = status.notfound;
 
+      return res.status(status.notfound).send(errorMessage);
+    }
 
+    try {
+      initMongoDBConnection();
+
+      const taskId = req.params.taskId;
+      const projectId = req.params.projectId;
+
+      // Check if task id exists
+      const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
+
+      if (!checkIfTaskExist) {
+        errorMessage.message = `Task with id ${taskId} does not exist`;
+        errorMessage.status = status.bad;
+
+        return res.status(status.bad).send(errorMessage);
+      }
+
+      // Check if project id exists
+      const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
+
+      if (!checkIfProjectExist) {
+        errorMessage.message = `Project with id ${projectId} does not exist`;
+        errorMessage.status = status.bad;
+
+        return res.status(status.bad).send(errorMessage);
+      }
+
+      const data = {
+        projectId: (requestData.projectId).trim(),
+        updatedAt: getCurrentTimeStamp(),
+      };
+
+      const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, data, (err, collection) => {
+        if (err) {
+          errorMessage.message = 'An error occurred while assigning task';
+          errorMessage.status = status.error;
+
+          return res.status(status.error).send(errorMessage);
+        } else {
+          return collection;
+        }
+      });
+
+      successMessage.message = `Task (${taskId}) has successfully been assigned to project with id: ${projectId}`;
+      successMessage.status = status.success;
+
+      res.status(status.success).send(successMessage);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      endMongoConnection();
+    }
   } catch (error) {
     console.log(error);
+  }
+}
+
+/**
+  * Method to filter tasks by project name
+  * @param {object} req
+  * @param {object} res
+  * @returns {object} JSON object
+  */
+const filterTasksByProjectName = async (req, res) => {
+  let successMessage = { status: 'success' };
+  const queryParams = req.query;
+
+    if (queryParams.projectName == null || queryParams.projectName == undefined) {
+        errorMessage.message = 'A project name must be provided';
+        errorMessage.status = status.notfound;
+
+        return res.status(status.notfound).send(errorMessage);
+    }
+
+    const projectName = (queryParams.projectName).trim();
+
+  try {
+      initMongoDBConnection();
+
+      // Get project by 
+
+      const filterResponse = await dbClient.collection(constants.taskCollection).find({ status: statusQuery }).toArray(function (err, result) {
+          if (err) {
+              errorMessage.message = 'An error occurred while filtering task';
+              errorMessage.status = status.error;
+
+              return res.status(status.error).send(errorMessage);
+          } else {
+              return result;
+          }
+      });
+     
+      successMessage.message = 'Tasks successfully filtered.';
+      successMessage.data = filterResponse;
+      successMessage.status = status.success;
+
+      res.status(status.success).send(successMessage);
+  } catch (error) {
+      console.log(error);
+  } finally {
+      endMongoConnection();
+  }
+}
+
+/**
+  * Method to sort projects by dates (startDate & endDate)
+  * @param {object} req
+  * @param {object} res
+  * @returns {object} JSON object
+  */
+const sortProjectsByDates = async (req, res) => {
+  let successMessage = { status: 'success' };
+  const requestParams = req.params;
+
+  if (requestParams.sortParameter == null || requestParams.sortParameter == undefined) {
+      errorMessage.message = 'A sort parameter must be provided';
+      errorMessage.status = status.notfound;
+
+      return res.status(status.notfound).send(errorMessage);
+  }
+
+  const sortParameter = (requestParams.sortParameter).trim();
+
+  try {
+      initMongoDBConnection();
+
+      const sortCriteria = {};
+
+      if (sortParameter === "startDate") {
+          sortCriteria.startDate = 1; // sort by ascending start date
+      } else if (sortParameter === "endDate") {
+          sortCriteria.endDate = -1; // sort by descending end date
+      } else {
+          errorMessage.message = `Invalid sort parameter. Can only be 'startDate' or 'endDate'`;
+          errorMessage.status = status.bad;
+
+          return res.status(status.bad).send(errorMessage);
+      }
+
+      const sortResponse = await dbClient.collection(constants.projectCollection).find().sort(sortCriteria).toArray(function (err, result) {
+          return err || result;
+      });
+     
+      successMessage.message = 'Projects sorted successfully.';
+      successMessage.data = sortResponse;
+      successMessage.sortCriteria = sortParameter;
+      successMessage.status = status.success;
+
+      res.status(status.success).send(successMessage);
+  } catch (error) {
+      console.log(error);
+  } finally {
+      endMongoConnection();
   }
 }
 
@@ -311,5 +459,7 @@ export {
   updateProject,
   getAllProjects,
   deleteProject,
-  assignTaskToProject
+  assignTaskToProject,
+  filterTasksByProjectName,
+  sortProjectsByDates
 }; 

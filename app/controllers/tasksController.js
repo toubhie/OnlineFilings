@@ -489,6 +489,7 @@ const sortTasks = async (req, res) => {
        
         successMessage.message = 'Tasks sorted successfully.';
         successMessage.data = sortResponse;
+        successMessage.sortCriteria = sortParameter;
         successMessage.status = status.success;
 
         res.status(status.success).send(successMessage);
