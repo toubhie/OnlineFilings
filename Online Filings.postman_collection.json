@@ -1,0 +1,489 @@
+{
+	"info": {
+		"_postman_id": "ea99aa90-5332-46b2-866e-ac4fc8879216",
+		"name": "Online Filings",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2563187"
+	},
+	"item": [
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Get all Projects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/projects",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sort Project By Dates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/projects/sort?sortParameter=dueDate",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"sort"
+							],
+							"query": [
+								{
+									"key": "sortParameter",
+									"value": "dueDate"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Project",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Project 5\",\r\n    \"description\": \"Project description\",\r\n    \"startDate\": \"2022-09-24\",\r\n    \"dueDate\": \"2022-09-25\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/projects",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Project",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Project 1\",\r\n    \"description\": \"Project description\",\r\n    \"startDate\": \"2022-09-25\",\r\n    \"dueDate\": \"2022-09-25\",\r\n    \"status\": \"completed\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/projects/643a03f4996950ecb7fb4816",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"643a03f4996950ecb7fb4816"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Project",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/projects/643a03f4996950ecb7fb4816",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"643a03f4996950ecb7fb4816"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Task to Project",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"projectId\": \"643a285facf0430a92a46627\",\n    \"taskId\": \"643a047fa772266eb3bc8548\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/projects/assign-task",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"assign-task"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Move Task Between Projects",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"taskId\": \"643a0473a772266eb3bc8546\",\n    \"sourceProjectId\": \"643a03ec996950ecb7fb4814\",\n    \"destinationProjectId\": \"643a03f8996950ecb7fb4817\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/projects/move-task-between-projects",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"move-task-between-projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Task By Project Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/projects/filter?projectName=Project 5",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"filter"
+							],
+							"query": [
+								{
+									"key": "projectName",
+									"value": "Project 5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Get Tasks by Project ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/tasks/get-tasks-by-project-id?projectId=643a03f8996950ecb7fb4817",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								"get-tasks-by-project-id"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "643a03f8996950ecb7fb4817"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Tasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/tasks/",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Task 5\",\r\n    \"description\": \"This is a test 5 description\",\r\n    \"priority\": \"1\",\r\n    \"startDate\": \"2023-04-14\",\r\n    \"dueDate\": \"2023-04-18\",\r\n    \"assignedTo\": \"Mark\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tasks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Task 3\",\r\n    \"description\": \"This is a new description\",\r\n    \"priority\": \"2\",\r\n    \"startDate\": \"2024-04-15\",\r\n    \"dueDate\": \"2024-04-19\",\r\n    \"assignedTo\": \"Luke\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tasks/643a047ba772266eb3bc8547",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								"643a047ba772266eb3bc8547"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/tasks/643a047ba772266eb3bc8547",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								"643a047ba772266eb3bc8547"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task Status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"status\": \"done\" \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tasks/643a1b8ef818345e6534925e",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								"643a1b8ef818345e6534925e"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sort Tasks by Date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/tasks/sort/startDate",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								"sort",
+								"startDate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Tasks By Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/tasks/status/completed",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								"status",
+								"completed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Task by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/tasks/search?name=task 3",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "task 3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Aggregation",
+			"item": [
+				{
+					"name": "All Projects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/aggregation/projects",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"aggregation",
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Tasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/aggregation/tasks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"aggregation",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "http://localhost:3008/api/v1",
+			"type": "string"
+		}
+	]
+}
