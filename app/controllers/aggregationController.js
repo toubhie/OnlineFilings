@@ -20,32 +20,42 @@ const dbClient = getClient();
 const getAllProjects = async (req, res) => {
   let successMessage = { status: 'success' };
 
-  const start = getTodayStartTimeStamp();
-  const end = getTodayEndTimeStamp();
+  const startTime = getTodayStartTimeStamp();
+  const endTime = getTodayEndTimeStamp();
 
   try {
-    initMongoDBConnection();
+    await initMongoDBConnection();
 
-    // select * from projects inner join tasks on t.projectId = p.id
-
-    const response = await dbClient.collection(constants.taskCollection).aggregate([
+    const response = dbClient.collection(constants.projectCollection).aggregate([
       {
         $lookup: {
           from: "tasks",
-          localField: "projectId",
-          foreignField: "_id",
-          as: "tasks"
+          localField: "_id",
+          foreignField: "project.projectId",
+          as: "projects"
         }
       },
       {
+        $unwind: "$projects"
+      },
+      {
         $match: {
-          "tasks.dueDate": { $gte: start, $lt: end }
+          "projects.dueDate": {
+            $gte: startTime,
+            $lte: endTime
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: { $first: "$name" },
+          description: { $first: "$description" },
+          startDate: { $first: "$startDate" },
+          dueDate: { $first: "$dueDate" }
         }
       }
-    ]);
-
-    console.log('response');
-    console.log(response);
+    ]).toArray();;
 
     successMessage.message = 'All projects';
     successMessage.data = response;
@@ -55,8 +65,6 @@ const getAllProjects = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-  } finally {
-    endMongoConnection();
   }
 }
 
@@ -69,34 +77,44 @@ const getAllProjects = async (req, res) => {
 const getAllTasks = async (req, res) => {
   let successMessage = { status: 'success' };
 
-  const start = getTodayStartTimeStamp();
-  const end = getTodayEndTimeStamp();
+  const startTime = getTodayStartTimeStamp();
+  const endTime = getTodayEndTimeStamp();
 
   try {
-    initMongoDBConnection();
+    await initMongoDBConnection();
 
-    // select * from projects inner join tasks on t.projectId = p.id
-
-    const response = await dbClient.collection(constants.taskCollection).aggregate([
+    const response = dbClient.collection(constants.taskCollection).aggregate([
       {
         $lookup: {
-          from: "tasks",
-          localField: "projectId",
+          from: "projects",
+          localField: "project.projectId",
           foreignField: "_id",
           as: "tasks"
         }
       },
       {
+        $unwind: "$tasks"
+      },
+      {
         $match: {
-          "tasks.dueDate": { $gte: start, $lt: end }
+          "tasks.dueDate": {
+            $gte: startTime,
+            $lte: endTime
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: { $first: "$name" },
+          description: { $first: "$description" },
+          startDate: { $first: "$startDate" },
+          dueDate: { $first: "$dueDate" }
         }
       }
-    ]);
+    ]).toArray();
 
-    console.log('response');
-    console.log(response);
-
-    successMessage.message = 'All projects';
+    successMessage.message = 'All tasks';
     successMessage.data = response;
     successMessage.status = status.success;
 
@@ -104,8 +122,6 @@ const getAllTasks = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-  } finally {
-    endMongoConnection();
   }
 }
 

@@ -45,7 +45,7 @@ const app = async () => {
     return jsonErrorResponse(res, `Invalid Request`, status.bad);
   })
 
-  initMongoDBConnection();
+  await initMongoDBConnection();
 
   app.listen(env.port).on('listening', () => {
     console.log(`🚀 Live on ${env.port}`);

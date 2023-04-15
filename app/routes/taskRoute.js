@@ -3,6 +3,7 @@ import {
     createTask,
     updateTask,
     getAllTasks,
+    getAllTasksByProjectId,
     deleteTask,
     changeStatusOfTask,
     searchTasksByName,
@@ -17,6 +18,8 @@ router.post('/', createTask);
 router.put('/:id', updateTask);
 
 router.get('/', getAllTasks);
+
+router.get('/get-tasks-by-project-id', getAllTasksByProjectId);
 
 router.delete('/:id', deleteTask);
 
