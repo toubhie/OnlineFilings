@@ -1,6 +1,6 @@
 import { errorMessage } from './status';
 
-const jsonErrorResponse = (res, message, status) => {
+const printJSONErrorResponse = (res, message, status) => {
     errorMessage.message = message;
     errorMessage.status = status;
 
@@ -8,5 +8,5 @@ const jsonErrorResponse = (res, message, status) => {
 };
 
 export {
-    jsonErrorResponse
+    printJSONErrorResponse
 };

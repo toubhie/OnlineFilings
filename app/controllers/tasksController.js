@@ -10,7 +10,7 @@ import moment from 'moment';
 
 const dbClient = getClient();
 
-import { jsonErrorResponse } from '../utils/responseHelper';
+import { printJSONErrorResponse } from '../utils/responseHelper';
 
 
 /**
@@ -27,28 +27,28 @@ const createTask = async (req, res) => {
 
     // Validate parameters to make sure they are provided
     if (!name) {
-        return jsonErrorResponse(res, 'A task name must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A task name must be provided', status.bad);
     }
 
     if (!startDate || !moment(startDate).isValid()) {
-        return jsonErrorResponse(res, 'A valid start date must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A valid start date must be provided', status.bad);
     }
 
     if (!dueDate || !moment(dueDate).isValid()) {
-        return jsonErrorResponse(res, 'A valid due date must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A valid due date must be provided', status.bad);
     }
 
     // Check if start date is greater than due date
     if (moment(startDate).isAfter(moment(dueDate))) {
-        return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
+        return printJSONErrorResponse(res, 'The due date must be greater than the start date', status.bad);
     }
 
     if (!priority) {
-        return jsonErrorResponse(res, 'A priority must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A priority must be provided', status.bad);
     }
 
     if (!assignedTo) {
-        return jsonErrorResponse(res, 'An assignee must be provided', status.bad);
+        return printJSONErrorResponse(res, 'An assignee must be provided', status.bad);
     }
 
     try {
@@ -79,7 +79,7 @@ const createTask = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        return jsonErrorResponse(res, 'An error occurred while creating the task', status.error);
+        return printJSONErrorResponse(res, 'An error occurred while creating the task', status.error);
     } finally {
         // Close mongodb connection
         await endMongoConnection();
@@ -99,12 +99,12 @@ const updateTask = async (req, res) => {
 
     // Check if the task id is passed
     if (!taskId) {
-        return jsonErrorResponse(res, 'A task id must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A task id must be provided', status.bad);
     }
 
     // Check if at least one field can be updated
     if (!requestData.name && !requestData.description && !requestData.priority && !requestData.startDate && !requestData.dueDate && !requestData.assignedTo) {
-        return jsonErrorResponse(res, 'At least one field must be provided to update the task', status.bad);
+        return printJSONErrorResponse(res, 'At least one field must be provided to update the task', status.bad);
     }
 
     // Check if document with task id exists in the collection
@@ -112,7 +112,7 @@ const updateTask = async (req, res) => {
 
     // Return JSON error response if task does not exist
     if (!checkIfTaskExist) {
-        return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
+        return printJSONErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
     }
 
     // Build update query
@@ -147,11 +147,11 @@ const updateTask = async (req, res) => {
 
             res.status(status.success).send(successMessage);
         } else {
-            return jsonErrorResponse(res, 'An error occurred while updating task', status.error);
+            return printJSONErrorResponse(res, 'An error occurred while updating task', status.error);
         }
     } catch (error) {
         console.log(error);
-        return jsonErrorResponse(res, 'An error occurred while updating task', status.error);
+        return printJSONErrorResponse(res, 'An error occurred while updating task', status.error);
     } finally {
         // Close mongodb connection
         await endMongoConnection();
@@ -181,7 +181,7 @@ const getAllTasks = async (req, res) => {
         res.status(status.success).send(successMessage);
     } catch (error) {
         console.error(error);
-        jsonErrorResponse(res, 'An error occurred while getting all tasks', status.error);
+        printJSONErrorResponse(res, 'An error occurred while getting all tasks', status.error);
     } finally {
         // Close mongodb connection
         await endMongoConnection();
@@ -202,7 +202,7 @@ const getAllTasksByProjectId = async (req, res) => {
 
     // Check if the project id is passed
     if (!projectId) {
-        return jsonErrorResponse(res, 'A project id must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A project id must be provided', status.bad);
     }
 
     try {
@@ -218,7 +218,7 @@ const getAllTasksByProjectId = async (req, res) => {
 
         res.status(status.success).send(successMessage);
     } catch (error) {
-        return jsonErrorResponse(res, 'An error occurred while getting tasks by project id', status.error);
+        return printJSONErrorResponse(res, 'An error occurred while getting tasks by project id', status.error);
     } finally {
         // Close mongodb connection
         await endMongoConnection();
@@ -239,7 +239,7 @@ const deleteTask = async (req, res) => {
 
     //Check if the task id is passed
     if (!taskId) {
-        return jsonErrorResponse(res, 'A task id name must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A task id name must be provided', status.bad);
     }
 
     try {
@@ -250,7 +250,7 @@ const deleteTask = async (req, res) => {
         const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
         if (!checkIfTaskExist) {
-            return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
+            return printJSONErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
         }
 
         // delete data from the collection
@@ -258,7 +258,7 @@ const deleteTask = async (req, res) => {
 
         // Check if the delete was successful
         if (!deleteResponse) {
-            return jsonErrorResponse(res, 'An error occurred while deleting task', status.error);
+            return printJSONErrorResponse(res, 'An error occurred while deleting task', status.error);
         } else {
             successMessage.message = 'Task deleted successfully';
             successMessage.status = status.success;
@@ -286,11 +286,11 @@ const changeStatusOfTask = async (req, res) => {
 
     // Validate parameters
     if (!id) {
-        return jsonErrorResponse(res, 'A task id must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A task id must be provided', status.bad);
     }
 
     if (!taskStatus) {
-        return jsonErrorResponse(res, 'A task status must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A task status must be provided', status.bad);
     }
 
     try {
@@ -301,7 +301,7 @@ const changeStatusOfTask = async (req, res) => {
         const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(id) });
 
         if (!checkIfTaskExist) {
-            return jsonErrorResponse(res, `Task with id ${id} does not exist`, status.notfound);
+            return printJSONErrorResponse(res, `Task with id ${id} does not exist`, status.notfound);
         }
 
         // Prepare the update object
@@ -335,7 +335,7 @@ const changeStatusOfTask = async (req, res) => {
         const updateResult = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(id) }, data);
 
         if (!updateResult.matchedCount) {
-            return jsonErrorResponse(res, `Task with id ${id} could not be updated`, status.error);
+            return printJSONErrorResponse(res, `Task with id ${id} could not be updated`, status.error);
         }
 
         const successMessage = {
@@ -364,7 +364,7 @@ const searchTasksByName = async (req, res) => {
 
     // Validate name parameter is passed
     if (!name) {
-        return jsonErrorResponse(res, 'A search parameter (task name) must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A search parameter (task name) must be provided', status.bad);
     }
 
     const searchKeyword = name.trim();
@@ -401,7 +401,7 @@ const filterTasksByStatus = async (req, res) => {
 
     // Validate parameters
     if (!taskStatus) {
-        return jsonErrorResponse(res, 'A status must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A status must be provided', status.bad);
     }
 
     try {
@@ -419,7 +419,7 @@ const filterTasksByStatus = async (req, res) => {
 
         res.status(status.success).send(successMessage);
     } catch (error) {
-        return jsonErrorResponse(res, 'An error occurred while filtering tasks', status.error);
+        return printJSONErrorResponse(res, 'An error occurred while filtering tasks', status.error);
     } finally {
         // Close mongodb connection
         await endMongoConnection();
@@ -437,7 +437,7 @@ const sortTasks = async (req, res) => {
     const requestParams = req.params;
 
     if (!requestParams.sortParameter) {
-        return jsonErrorResponse(res, 'A sort parameter must be provided', status.bad);
+        return printJSONErrorResponse(res, 'A sort parameter must be provided', status.bad);
     }
 
     const sortParameter = requestParams.sortParameter.trim();
@@ -459,7 +459,7 @@ const sortTasks = async (req, res) => {
                 sortCriteria.dateCompleted = -1; // sort by descending date completed
                 break;
             default:
-                return jsonErrorResponse(res, `Invalid sort parameter. Can only be 'startDate', 'dueDate' or 'dateCompleted'`, status.bad);
+                return printJSONErrorResponse(res, `Invalid sort parameter. Can only be 'startDate', 'dueDate' or 'dateCompleted'`, status.bad);
         }
 
         const sortResponse = await dbClient.collection(constants.taskCollection).find().sort(sortCriteria).toArray();

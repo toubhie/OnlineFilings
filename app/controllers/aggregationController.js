@@ -21,8 +21,8 @@ const getAllProjects = async (req, res) => {
   const successMessage = { status: 'success' };
 
   try {
-            // Initialize mongo db connection
-        await initMongoDBConnection();
+    // Initialize mongo db connection
+    await initMongoDBConnection();
 
     const startTime = getTodayStartTimeStamp();
     const endTime = getTodayEndTimeStamp();
@@ -31,19 +31,18 @@ const getAllProjects = async (req, res) => {
       {
         $lookup: {
           from: "tasks",
-          localField: "_id",
-          foreignField: "project.projectId",
-          as: "projects"
+          localField: "tasks",
+          foreignField: "_id",
+          as: "tasks",
         }
       },
       {
-        $unwind: "$projects"
+        $unwind: "$tasks"
       },
       {
         $match: {
-          "projects.dueDate": {
-            $gte: startTime,
-            $lte: endTime
+          tasks: {
+            $elemMatch: { dueDate: { $gte: startTime, $lt: endTime } },
           }
         }
       },
@@ -56,7 +55,7 @@ const getAllProjects = async (req, res) => {
           dueDate: { $first: "$dueDate" }
         }
       }
-    ]).toArray();;
+    ]).toArray();
 
     successMessage.message = 'All projects';
     successMessage.data = response;
@@ -66,10 +65,10 @@ const getAllProjects = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    return jsonErrorResponse(res, 'An error occurred while getting all tasks', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while getting all tasks', status.error);
   } finally {
     // Close mongodb connection
-        await endMongoConnection();
+    await endMongoConnection();
   }
 }
 
@@ -83,8 +82,8 @@ const getAllTasks = async (req, res) => {
   const successMessage = { status: 'success' };
 
   try {
-            // Initialize mongo db connection
-        await initMongoDBConnection();
+    // Initialize mongo db connection
+    await initMongoDBConnection();
 
     const startTime = getTodayStartTimeStamp();
     const endTime = getTodayEndTimeStamp();
@@ -93,17 +92,17 @@ const getAllTasks = async (req, res) => {
       {
         $lookup: {
           from: "projects",
-          localField: "project.projectId",
+          localField: "projectId",
           foreignField: "_id",
-          as: "tasks"
+          as: "project",
         }
       },
       {
-        $unwind: "$tasks"
+        $unwind: "$project"
       },
       {
         $match: {
-          "tasks.dueDate": {
+          "project.dueDate": {
             $gte: startTime,
             $lte: endTime
           }
@@ -128,10 +127,10 @@ const getAllTasks = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    return jsonErrorResponse(res, 'An error occurred while getting all tasks', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while getting all tasks', status.error);
   } finally {
     // Close mongodb connection
-        await endMongoConnection();
+    await endMongoConnection();
   }
 }
 

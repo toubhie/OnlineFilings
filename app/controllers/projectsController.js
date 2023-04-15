@@ -10,7 +10,7 @@ import moment from 'moment';
 
 const dbClient = getClient();
 
-import { jsonErrorResponse } from '../utils/responseHelper';
+import { printJSONErrorResponse } from '../utils/responseHelper';
 
 /**
   * Method to create a new project
@@ -25,30 +25,30 @@ const createProject = async (req, res) => {
     const { name, description, startDate, dueDate } = req.body;
 
     if (!name) {
-      return jsonErrorResponse(res, 'A project name must be provided', status.bad);
+      return printJSONErrorResponse(res, 'A project name must be provided', status.bad);
     }
 
     if (!startDate) {
-      return jsonErrorResponse(res, 'A start date must be provided', status.bad);
+      return printJSONErrorResponse(res, 'A start date must be provided', status.bad);
     }
 
     if (!dueDate) {
-      return jsonErrorResponse(res, 'A due date must be provided', status.bad);
+      return printJSONErrorResponse(res, 'A due date must be provided', status.bad);
     }
 
     const startDateMoment = moment(startDate, 'YYYY-MM-DD', true);
     const dueDateMoment = moment(dueDate, 'YYYY-MM-DD', true);
 
     if (!startDateMoment.isValid()) {
-      return jsonErrorResponse(res, 'Invalid start date format', status.bad);
+      return printJSONErrorResponse(res, 'Invalid start date format', status.bad);
     }
 
     if (!dueDateMoment.isValid()) {
-      return jsonErrorResponse(res, 'Invalid due date format', status.bad);
+      return printJSONErrorResponse(res, 'Invalid due date format', status.bad);
     }
 
     if (startDateMoment.isAfter(dueDateMoment)) {
-      return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
+      return printJSONErrorResponse(res, 'The due date must be greater than the start date', status.bad);
     }
 
     // Initialize mongo db connection
@@ -72,11 +72,11 @@ const createProject = async (req, res) => {
 
       res.status(status.success).send(successMessage);
     } else {
-      return jsonErrorResponse(res, 'An error occurred while creating project', status.error);
+      return printJSONErrorResponse(res, 'An error occurred while creating project', status.error);
     }
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while creating project', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while creating project', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();
@@ -96,20 +96,20 @@ const updateProject = async (req, res) => {
 
   // Check if the project id is passed
   if (!projectId) {
-    return jsonErrorResponse(res, 'A project id must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A project id must be provided', status.bad);
   }
 
   const fields = ['name', 'status', 'startDate', 'dueDate'];
   for (let field of fields) {
     if (requestData[field] == null) {
-      return jsonErrorResponse(res, `A ${field} must be provided`, status.bad);
+      return printJSONErrorResponse(res, `A ${field} must be provided`, status.bad);
     }
     requestData[field] = requestData[field].trim();
   }
 
   // Check if start date is greater than due date
   if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
-    return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
+    return printJSONErrorResponse(res, 'The due date must be greater than the start date', status.bad);
   }
 
   try {
@@ -120,7 +120,7 @@ const updateProject = async (req, res) => {
     const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
     if (!checkIfProjectExist) {
-      return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
+      return printJSONErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
     }
 
     const data = {
@@ -142,11 +142,11 @@ const updateProject = async (req, res) => {
 
       res.status(status.success).send(successMessage);
     } else {
-      return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
+      return printJSONErrorResponse(res, 'An error occurred while updating project', status.error);
     }
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();
@@ -176,7 +176,7 @@ const getAllProjects = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();
@@ -196,7 +196,7 @@ const deleteProject = async (req, res) => {
 
   //Check if the project id is passed
   if (!projectId) {
-    return jsonErrorResponse(res, 'A project id must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A project id must be provided', status.bad);
   }
 
   try {
@@ -209,14 +209,14 @@ const deleteProject = async (req, res) => {
     const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
     if (!checkIfProjectExist) {
-      return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
+      return printJSONErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
     }
 
     // Delete the data in the collection
     const deleteTask = await dbClient.collection(constants.projectCollection).deleteOne({ _id: new ObjectId(projectId) });
 
     if (deleteTask.deletedCount === 0) {
-      return jsonErrorResponse(res, 'No projects were deleted', status.error);
+      return printJSONErrorResponse(res, 'No projects were deleted', status.error);
     }
 
     successMessage.message = 'Project deleted successfully';
@@ -226,7 +226,7 @@ const deleteProject = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();
@@ -243,11 +243,11 @@ const assignTaskToProject = async (req, res) => {
   const { taskId, projectId } = req.body;
 
   if (!taskId) {
-    return jsonErrorResponse(res, 'A task id must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A task id must be provided', status.bad);
   }
 
   if (!projectId) {
-    return jsonErrorResponse(res, 'A project id must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A project id must be provided', status.bad);
   }
 
   try {
@@ -258,15 +258,15 @@ const assignTaskToProject = async (req, res) => {
     const projectData = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
     if (!taskData) {
-      return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
+      return printJSONErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
     }
 
     if (!projectData) {
-      return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
+      return printJSONErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
     }
 
     if (taskData.project !== undefined && taskData.project.projectId === projectId) {
-      return jsonErrorResponse(res, 'Task is already in the destination project', status.bad);
+      return printJSONErrorResponse(res, 'Task is already in the destination project', status.bad);
     }
 
     const newDataForTaskCollection = {
@@ -274,6 +274,7 @@ const assignTaskToProject = async (req, res) => {
         project: {
           projectId,
           projectName: projectData.name,
+          dueDate: projectData.dueDate
         },
         updatedAt: getCurrentTimeStamp(),
       },
@@ -284,6 +285,7 @@ const assignTaskToProject = async (req, res) => {
         tasks: {
           taskId,
           taskName: taskData.name,
+          dueDate: taskData.dueDate
         },
       },
     };
@@ -297,7 +299,7 @@ const assignTaskToProject = async (req, res) => {
       .updateOne({ _id: new ObjectId(projectId) }, newDataForProjectCollection);
 
     if (taskModifiedCount === 0 || projectModifiedCount === 0) {
-      return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
+      return printJSONErrorResponse(res, 'An error occurred while assigning task', status.error);
     }
 
     const successMessage = {
@@ -308,7 +310,7 @@ const assignTaskToProject = async (req, res) => {
     res.status(status.success).send(successMessage);
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();
@@ -326,15 +328,15 @@ const moveTaskBetweenProjects = async (req, res) => {
   const { taskId, sourceProjectId, destinationProjectId } = req.body;
 
   if (!taskId) {
-    return jsonErrorResponse(res, 'A task id must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A task id must be provided', status.bad);
   }
 
   if (!sourceProjectId) {
-    return jsonErrorResponse(res, 'A source project id must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A source project id must be provided', status.bad);
   }
 
   if (!destinationProjectId) {
-    return jsonErrorResponse(res, 'A destination project id must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A destination project id must be provided', status.bad);
   }
 
   try {
@@ -344,27 +346,27 @@ const moveTaskBetweenProjects = async (req, res) => {
     const task = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
     if (!task) {
-      return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
+      return printJSONErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
     }
 
     const sourceProject = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(sourceProjectId) });
 
     if (!sourceProject) {
-      return jsonErrorResponse(res, `Source project with id ${sourceProjectId} does not exist`, status.notfound);
+      return printJSONErrorResponse(res, `Source project with id ${sourceProjectId} does not exist`, status.notfound);
     }
 
     const destinationProject = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(destinationProjectId) });
 
     if (!destinationProject) {
-      return jsonErrorResponse(res, `Destination project with id ${destinationProjectId} does not exist`, status.notfound);
+      return printJSONErrorResponse(res, `Destination project with id ${destinationProjectId} does not exist`, status.notfound);
     }
 
     if (task.project && task.project.projectId !== sourceProjectId) {
-      return jsonErrorResponse(res, 'Task is not in the source project', status.bad);
+      return printJSONErrorResponse(res, 'Task is not in the source project', status.bad);
     }
 
     if (task.project && task.project.projectId === destinationProjectId) {
-      return jsonErrorResponse(res, 'Task is already in the destination project', status.bad);
+      return printJSONErrorResponse(res, 'Task is already in the destination project', status.bad);
     }
 
     const newDataForDestinationProjectCollection = {
@@ -401,7 +403,7 @@ const moveTaskBetweenProjects = async (req, res) => {
     res.status(status.success).send(successMessage);
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while assigning task', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();
@@ -420,7 +422,7 @@ const filterTasksByProjectName = async (req, res) => {
   const { projectName } = req.query;
 
   if (!projectName) {
-    return jsonErrorResponse(res, 'A project name must be provided', status.bad);
+    return printJSONErrorResponse(res, 'A project name must be provided', status.bad);
   }
 
   try {
@@ -432,7 +434,7 @@ const filterTasksByProjectName = async (req, res) => {
       .toArray();
 
     if (filteredTasks.length === 0) {
-      return jsonErrorResponse(res, 'No tasks found for the specified project name', status.notfound);
+      return printJSONErrorResponse(res, 'No tasks found for the specified project name', status.notfound);
     }
 
     successMessage.message = 'Tasks successfully filtered.';
@@ -442,7 +444,7 @@ const filterTasksByProjectName = async (req, res) => {
     res.status(status.success).send(successMessage);
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while assigning task', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();
@@ -460,7 +462,7 @@ const sortProjectsByDates = async (req, res) => {
   const queryParams = req.query;
 
   if (!queryParams.sortParameter) {
-    return jsonErrorResponse(res, 'A sort parameter must be provided.', status.bad);
+    return printJSONErrorResponse(res, 'A sort parameter must be provided.', status.bad);
   }
 
   const sortParameter = queryParams.sortParameter.trim();
@@ -476,7 +478,7 @@ const sortProjectsByDates = async (req, res) => {
     } else if (sortParameter === 'dueDate') {
       sortCriteria.dueDate = -1; // sort by descending due date
     } else {
-      return jsonErrorResponse(res, `Invalid sort parameter. Can only be 'startDate' or 'dueDate'.`, status.bad);
+      return printJSONErrorResponse(res, `Invalid sort parameter. Can only be 'startDate' or 'dueDate'.`, status.bad);
     }
 
     const sortResponse = await dbClient.collection(constants.projectCollection).find().sort(sortCriteria).toArray();
@@ -489,7 +491,7 @@ const sortProjectsByDates = async (req, res) => {
     res.status(status.success).send(successMessage);
   } catch (error) {
     console.log(error);
-    return jsonErrorResponse(res, 'An error occurred while sorting projects.', status.error);
+    return printJSONErrorResponse(res, 'An error occurred while sorting projects.', status.error);
   } finally {
     // Close mongodb connection
     await endMongoConnection();

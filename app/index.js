@@ -9,7 +9,7 @@ import path from 'path';
 import { getCurrentTimeStamp } from './utils/helperFunctions';
 import { initMongoDBConnection } from './db/dbConnection';
 import { status } from './utils/status';
-import { jsonErrorResponse } from './utils/responseHelper';
+import { printJSONErrorResponse } from './utils/responseHelper';
 
 const app = async () => {
 
@@ -42,7 +42,7 @@ const app = async () => {
   app.use('/api/v1/aggregation', aggregationRoute);
 
   app.use("*", (req, res) => {
-    return jsonErrorResponse(res, `Invalid Request`, status.bad);
+    return printJSONErrorResponse(res, `Invalid Request`, status.bad);
   })
 
           // Initialize mongo db connection

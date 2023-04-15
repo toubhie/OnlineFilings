@@ -4,7 +4,7 @@ import constants from '../utils/constants';
 import { getClient, endMongoConnection, initMongoDBConnection } from '../db/dbConnection';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { jsonErrorResponse } from '../utils/responseHelper';
+import { printJSONErrorResponse } from '../utils/responseHelper';
 import { createTask, updateTask, getAllTasks, deleteTask, changeStatusOfTask, searchTasksByName, filterTasksByStatus, sortTasks } from './tasksController';
 
 jest.mock('../utils/status');
