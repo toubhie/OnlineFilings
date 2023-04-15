@@ -64,7 +64,7 @@ const createTask = async (req, res) => {
             dueDate: (requestData.dueDate).trim(),
             assignedTo: (requestData.assignedTo).trim(),
             projectId: (requestData.projectId).trim(),
-            createdAt: getCurrentTimeStamp(),
+            createdAt: getCurrentTimeStamp()
         };
 
         const result = await dbClient.collection(constants.taskCollection).insertOne(data);

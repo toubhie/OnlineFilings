@@ -263,6 +263,8 @@ const assignTaskToProject = async (req, res) => {
         return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
       }
 
+      console.log('checkIfTaskExist', checkIfTaskExist);
+
       // const data = {
       //   projectId: projectId,
       //   updatedAt: getCurrentTimeStamp(),
