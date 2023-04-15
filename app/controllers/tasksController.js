@@ -48,10 +48,6 @@ const createTask = async (req, res) => {
         return jsonErrorResponse(res, 'An assignee must be provided', status.bad);
     }
 
-    if (requestData.projectId == null || requestData.projectId == undefined) {
-        return jsonErrorResponse(res, 'A project Id must be provided', status.bad);
-    }
-
     try {
         initMongoDBConnection();
 
@@ -63,7 +59,6 @@ const createTask = async (req, res) => {
             startDate: (requestData.startDate).trim(),
             dueDate: (requestData.dueDate).trim(),
             assignedTo: (requestData.assignedTo).trim(),
-            projectId: (requestData.projectId).trim(),
             createdAt: getCurrentTimeStamp()
         };
 

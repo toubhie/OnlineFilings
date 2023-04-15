@@ -5,6 +5,7 @@ import {
     getAllProjects,
     deleteProject,
     assignTaskToProject,
+    moveTaskBetweenProjects,
     filterTasksByProjectName,
     sortProjectsByDates
 } from '../controllers/projectsController';
@@ -21,7 +22,9 @@ router.delete('/:id', deleteProject);
 
 router.post('/assign-task', assignTaskToProject);
 
-router.get('/:projectName/tasks', filterTasksByProjectName);
+router.post('/move-task-between-projects', moveTaskBetweenProjects);
+
+router.get('/filter', filterTasksByProjectName);
 
 router.get('/sort', sortProjectsByDates);
 

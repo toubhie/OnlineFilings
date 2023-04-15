@@ -1,34 +1,30 @@
 
-![Logo](https://enairawebtest1.azurewebsites.net/enairalogo.png)
+# OnlineFilings - To-Do List API Management
 
-
-# e-Naira Transaction & Charges Module
-
-APIs for E-Naira transactions and charges.
-APIs for Charges Portal
+This codebase consist of APIs for a To-Do List application. It consists of several endpoints for tasks and projects management.
  
 
 
 ## API Documentation
 
-Click here [here](https://documenter.getpostman.com/view/19793675/UVsG19Bc#6aa35056-bc77-40c9-8ca5-cea1b9fe24a2) to view the API documentation for the mobile & web applications. Click here [here](https://documenter.getpostman.com/view/19793675/UVsG19Bc#9b80c260-ec5f-42d5-87ab-63fbe1a53098) to view the API documentation for USSD.
+Click here [here](https://documenter.getpostman.com/view/2563187/2s93XyShJL) to view the API documentation for the task and projects management APIs.
 
 
 ## Pre-requisites
 
-- Make sure Node and NPM are installed and their PATHs defined. You can download NodeJS from [here](https://nodejs.org/en/).
+- Make sure Node, Express, NPM & MongoDB are installed and their PATHs defined. You can download NodeJS from [here](https://nodejs.org/en/) and MongoDB from [here](https://www.mongodb.com/try/download/community).
 ## Run Locally
 
 Clone the project
 
 ```bash
-  git clone https://github.com/Application-Management-Division/Enaira-Charges-API.git
+  git clone https://github.com/toubhie/OnlineFilings.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd Enaira-Charges-API
+  cd OnlineFilings
 ```
 
 Install dependencies
@@ -43,10 +39,6 @@ Start the server
   npm run dev
 ```
 
-
-## Deployment
-
-Please view the [Implementation & Deployment Procedure](https://github.com/Application-Management-Division/Enaira-Charges-API/wiki/Deployment-and-Implementation-Procedure) document on how to deploy this application.
 ## Contributing
 
 Contributions are always welcome! Any contributions you make are greatly appreciated.
@@ -59,10 +51,6 @@ To fork this Project
 - Push to the Branch (git push origin feature/NewFeature)
 - Open a Pull Request
 
-## Feedback
-
-If you have any feedback, please reach out to us at helpdesk@enaira.gov.ng
 ## Authors
 
-- [Williams Tobiloba](https://www.github.com/williams26971)
-
+- [Williams Tobiloba](https://github.com/toubhie)

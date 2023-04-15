@@ -250,39 +250,53 @@ const assignTaskToProject = async (req, res) => {
       const projectId = requestData.projectId;
 
       // Check if task id exists
-      const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
+      const taskData = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
-      if (!checkIfTaskExist) {
+      if (!taskData) {
         return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
       }
 
       // Check if project id exists
-      const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
+      const projectData = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
-      if (!checkIfProjectExist) {
+      if (!projectData) {
         return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
       }
 
-      console.log('checkIfTaskExist', checkIfTaskExist);
+      // Check if the task is already in the destination project
+      if (taskData.project !== undefined && taskData.project.projectId === projectId) {
+        return jsonErrorResponse(res, 'Task is already in the destination project', status.bad);
+      }
 
-      // const data = {
-      //   projectId: projectId,
-      //   updatedAt: getCurrentTimeStamp(),
-      // };
+      const newDataForTaskCollection = {
+        $set : {
+          project: {
+            projectId: projectId,
+            projectName: projectData.name
+          },
+          updatedAt: getCurrentTimeStamp()
+        }
+      };
 
-      // const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, data, (err, collection) => {
-      //   if (err) {
-      //        return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
-      //   } else {
-      //     return collection;
-      //   }
-      // });
+      const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, newDataForTaskCollection, (err, collection) => {
+        if (err) {
+          return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
+        } else {
+          return collection;
+        }
+      });
 
-
-      const taskData = { $push: { tasks: taskId } }
+      const newDataForProjectCollection = {
+        $push: {
+          tasks: {
+            taskId: taskId,
+            taskName: taskData.name
+          }
+        }
+      }
 
       //Add task to task object in project collection
-      const updateProjectResponse = await dbClient.collection(constants.projectCollection).updateOne({ _id: new ObjectId(projectId) }, taskData, (err, collection) => {
+      const updateProjectResponse = await dbClient.collection(constants.projectCollection).updateOne({ _id: new ObjectId(projectId) }, newDataForProjectCollection, (err, collection) => {
         if (err) {
           return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
         } else {
@@ -291,6 +305,130 @@ const assignTaskToProject = async (req, res) => {
       });
 
       successMessage.message = `Task (${taskId}) has successfully been assigned to project with id: ${projectId}`;
+      successMessage.status = status.success;
+
+      res.status(status.success).send(successMessage);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      endMongoConnection();
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+/**
+  * Method to move a task from one project to another project
+  * @param {object} req
+  * @param {object} res
+  * @returns {object} JSON object
+  */
+const moveTaskBetweenProjects = async (req, res) => {
+  let successMessage = { status: 'success' };
+  const requestData = req.body;
+
+  try {
+    //Check if the task id is passed
+    if (requestData.taskId == null || requestData.taskId == undefined) {
+      return jsonErrorResponse(res, 'A task id must be provided', status.bad);
+    }
+
+    //Check if the project id is passed
+    if (requestData.sourceProjectId == null || requestData.sourceProjectId == undefined) {
+      return jsonErrorResponse(res, 'A source project id must be provided', status.bad);
+    }
+
+    if (requestData.destinationProjectId == null || requestData.destinationProjectId == undefined) {
+      return jsonErrorResponse(res, 'A destination project id must be provided', status.bad);
+    }
+
+    try {
+      initMongoDBConnection();
+
+      const taskId = requestData.taskId;
+      const sourceProjectId = requestData.sourceProjectId;
+      const destinationProjectId = requestData.destinationProjectId;
+
+      // Check if task id exists
+      const taskData = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
+
+      if (!taskData) {
+        return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
+      }
+
+      // Check if source project id exists
+      const sourceProjectData = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(sourceProjectId) });
+
+      if (!sourceProjectData) {
+        return jsonErrorResponse(res, `Source project with id ${sourceProjectId} does not exist`, status.notfound);
+      }
+
+       // Check if desctination project id exists
+       const destinationProjectData = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(destinationProjectId) });
+
+       if (!destinationProjectData) {
+         return jsonErrorResponse(res, `Destination project with id ${destinationProjectId} does not exist`, status.notfound);
+       }
+
+      // Check if the task is in the source project
+      if (taskData.project !== undefined && taskData.project.projectId !== sourceProjectId) {
+        return jsonErrorResponse(res, 'Task is not in the source project', status.bad);
+      }
+
+      // Check if the task is already in the destination project
+      if (taskData.project !== undefined && taskData.project.projectId === destinationProjectId) {
+        return jsonErrorResponse(res, 'Task is already in the destination project', status.bad);
+      }
+
+
+      const newDataForDestinationProjectCollection = {
+        $push: {
+          tasks: {
+            taskId: taskId,
+            taskName: taskData.name
+          }
+        }
+      }
+
+      //Add task to task object in destination project collection
+      const updateDestinationProjectResponse = await dbClient.collection(constants.projectCollection).updateOne({ _id: new ObjectId(destinationProjectId) }, newDataForDestinationProjectCollection, (err, collection) => {
+        if (err) {
+          return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
+        } else {
+          return collection;
+        }
+      });
+
+
+      //Remove task from source project collection
+      const result = await dbClient.collection(constants.projectCollection).updateOne(
+        { _id: new ObjectId(sourceProjectId) },
+        { $pull: { tasks: { $in: [taskId] } } }
+      );
+
+      console.log('result', result);
+
+      //Update task collection with new project id
+      const newDataForTaskCollection = {
+        $set : {
+          project: {
+            projectId: destinationProjectId,
+            projectName: destinationProjectData.name
+          },
+          updatedAt: getCurrentTimeStamp()
+        }
+      };
+
+      const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, newDataForTaskCollection, (err, collection) => {
+        if (err) {
+          return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
+        } else {
+          return collection;
+        }
+      });
+
+      successMessage.message = `Task (${taskId}) has successfully been moved to project with id: ${destinationProjectId}`;
       successMessage.status = status.success;
 
       res.status(status.success).send(successMessage);
@@ -323,7 +461,7 @@ const filterTasksByProjectName = async (req, res) => {
   try {
     initMongoDBConnection();
 
-    const filterResponse = await dbClient.collection(constants.taskCollection).find({ status: statusQuery }).toArray(function (err, result) {
+    const filterResponse = await dbClient.collection(constants.taskCollection).find({ "project.projectName": projectName }).toArray(function (err, result) {
       if (err) {
         return jsonErrorResponse(res, 'An error occurred while filtering task', status.error);
       } else {
@@ -395,6 +533,7 @@ export {
   getAllProjects,
   deleteProject,
   assignTaskToProject,
+  moveTaskBetweenProjects,
   filterTasksByProjectName,
   sortProjectsByDates
 }; 
