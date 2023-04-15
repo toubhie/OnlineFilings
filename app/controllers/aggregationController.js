@@ -18,13 +18,14 @@ const dbClient = getClient();
   * @returns {object} JSON object
   */
 const getAllProjects = async (req, res) => {
-  let successMessage = { status: 'success' };
-
-  const startTime = getTodayStartTimeStamp();
-  const endTime = getTodayEndTimeStamp();
+  const successMessage = { status: 'success' };
 
   try {
-    await initMongoDBConnection();
+            // Initialize mongo db connection
+        await initMongoDBConnection();
+
+    const startTime = getTodayStartTimeStamp();
+    const endTime = getTodayEndTimeStamp();
 
     const response = dbClient.collection(constants.projectCollection).aggregate([
       {
@@ -64,7 +65,11 @@ const getAllProjects = async (req, res) => {
     res.status(status.success).send(successMessage);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return jsonErrorResponse(res, 'An error occurred while getting all tasks', status.error);
+  } finally {
+    // Close mongodb connection
+        await endMongoConnection();
   }
 }
 
@@ -75,15 +80,16 @@ const getAllProjects = async (req, res) => {
   * @returns {object} JSON object
   */
 const getAllTasks = async (req, res) => {
-  let successMessage = { status: 'success' };
-
-  const startTime = getTodayStartTimeStamp();
-  const endTime = getTodayEndTimeStamp();
+  const successMessage = { status: 'success' };
 
   try {
-    await initMongoDBConnection();
+            // Initialize mongo db connection
+        await initMongoDBConnection();
 
-    const response = dbClient.collection(constants.taskCollection).aggregate([
+    const startTime = getTodayStartTimeStamp();
+    const endTime = getTodayEndTimeStamp();
+
+    const response = await dbClient.collection(constants.taskCollection).aggregate([
       {
         $lookup: {
           from: "projects",
@@ -121,7 +127,11 @@ const getAllTasks = async (req, res) => {
     res.status(status.success).send(successMessage);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return jsonErrorResponse(res, 'An error occurred while getting all tasks', status.error);
+  } finally {
+    // Close mongodb connection
+        await endMongoConnection();
   }
 }
 

@@ -22,8 +22,10 @@ import { jsonErrorResponse } from '../utils/responseHelper';
 const createTask = async (req, res) => {
     const successMessage = { status: 'success' };
 
+    // Get body parameters to create a new task
     const { name, description, startDate, dueDate, priority, assignedTo } = req.body;
 
+    // Validate parameters to make sure they are provided
     if (!name) {
         return jsonErrorResponse(res, 'A task name must be provided', status.bad);
     }
@@ -50,12 +52,14 @@ const createTask = async (req, res) => {
     }
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
+        // Data object to create a new document in the task collection
         const data = {
             name: name.trim(),
             description,
-            status: constants.statusPending,
+            status: constants.taskStatusToDo,
             priority: priority.trim(),
             startDate: moment(startDate).toDate(),
             dueDate: moment(dueDate).toDate(),
@@ -63,19 +67,21 @@ const createTask = async (req, res) => {
             createdAt: getCurrentTimeStamp(),
         };
 
+        // Insert the document into the the collection
         const result = await dbClient.collection(constants.taskCollection).insertOne(data);
 
         successMessage.message = 'Task created successfully';
         successMessage.taskId = result.insertedId;
         successMessage.status = status.success;
 
+        // Return successful JSON response back to the client
         res.status(status.success).send(successMessage);
-
 
     } catch (error) {
         console.log(error);
         return jsonErrorResponse(res, 'An error occurred while creating the task', status.error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }
@@ -101,9 +107,10 @@ const updateTask = async (req, res) => {
         return jsonErrorResponse(res, 'At least one field must be provided to update the task', status.bad);
     }
 
-    // Check if ID exists
+    // Check if document with task id exists in the collection
     const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
+    // Return JSON error response if task does not exist
     if (!checkIfTaskExist) {
         return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
     }
@@ -122,6 +129,7 @@ const updateTask = async (req, res) => {
     };
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
         // Update task in database
@@ -145,9 +153,9 @@ const updateTask = async (req, res) => {
         console.log(error);
         return jsonErrorResponse(res, 'An error occurred while updating task', status.error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
-
 }
 
 /**
@@ -160,8 +168,10 @@ const getAllTasks = async (req, res) => {
     const successMessage = { status: 'success' };
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
+        // Query to get all tasks from the collection
         const tasks = await dbClient.collection(constants.taskCollection).find({}).toArray();
 
         successMessage.message = 'All tasks';
@@ -173,6 +183,7 @@ const getAllTasks = async (req, res) => {
         console.error(error);
         jsonErrorResponse(res, 'An error occurred while getting all tasks', status.error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }
@@ -185,15 +196,20 @@ const getAllTasks = async (req, res) => {
   */
 const getAllTasksByProjectId = async (req, res) => {
     const successMessage = { status: 'success' };
+
+    // Get project id from the query
     const { projectId } = req.query;
 
+    // Check if the project id is passed
     if (!projectId) {
         return jsonErrorResponse(res, 'A project id must be provided', status.bad);
     }
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
+        // Filter the tasks collection by project id
         const filterResponse = await dbClient.collection(constants.taskCollection).find({ "project.projectId": projectId }).toArray();
 
         successMessage.message = 'Tasks gotten successfully';
@@ -204,6 +220,7 @@ const getAllTasksByProjectId = async (req, res) => {
     } catch (error) {
         return jsonErrorResponse(res, 'An error occurred while getting tasks by project id', status.error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }
@@ -217,6 +234,7 @@ const getAllTasksByProjectId = async (req, res) => {
 const deleteTask = async (req, res) => {
     const successMessage = { status: 'success' };
 
+    // Destructure the req.params object and get the task id
     const { id: taskId } = req.params;
 
     //Check if the task id is passed
@@ -225,18 +243,20 @@ const deleteTask = async (req, res) => {
     }
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
-        // Check if ID exists
+        // Check if document with task id exists in the collection
         const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
         if (!checkIfTaskExist) {
             return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
         }
 
-        // delete data
+        // delete data from the collection
         const deleteResponse = await dbClient.collection(constants.taskCollection).deleteOne({ _id: new ObjectId(taskId) });
 
+        // Check if the delete was successful
         if (!deleteResponse) {
             return jsonErrorResponse(res, 'An error occurred while deleting task', status.error);
         } else {
@@ -249,6 +269,7 @@ const deleteTask = async (req, res) => {
     } catch (error) {
         console.log(error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }
@@ -263,6 +284,7 @@ const changeStatusOfTask = async (req, res) => {
     const { id } = req.params;
     const { status: taskStatus } = req.body;
 
+    // Validate parameters
     if (!id) {
         return jsonErrorResponse(res, 'A task id must be provided', status.bad);
     }
@@ -272,14 +294,17 @@ const changeStatusOfTask = async (req, res) => {
     }
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
+        // Check if document with task id exists in the collection
         const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(id) });
 
         if (!checkIfTaskExist) {
             return jsonErrorResponse(res, `Task with id ${id} does not exist`, status.notfound);
         }
 
+        // Prepare the update object
         const data = {
             $set: {
                 status: taskStatus,
@@ -287,6 +312,26 @@ const changeStatusOfTask = async (req, res) => {
             },
         };
 
+        // Check the task status to handle start and due dates
+
+        if (taskStatus === constants.taskStatusDone || taskStatus === constants.taskStatusClosed) {
+            data.$set.dateCompleted = moment().toDate();
+        
+        } else if (taskStatus === constants.taskStatusToDo) {
+            // Ideally we would prompt the the user to choose their new start and due dates
+            const newStartDate = moment().toDate();
+            const newDueDate = moment().add(1, 'day').toDate();
+
+            data.$set.startDate = newStartDate;
+            data.$set.dueDate = newDueDate;
+            data.$set.dateCompleted = null;
+        
+        } else {
+            // Handle other statuses like cancelled, etc...
+            data.$set.dateCompleted = null;
+        }
+
+        // Update the task status
         const updateResult = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(id) }, data);
 
         if (!updateResult.matchedCount) {
@@ -302,6 +347,7 @@ const changeStatusOfTask = async (req, res) => {
     } catch (error) {
         console.log(error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }
@@ -316,6 +362,7 @@ const searchTasksByName = async (req, res) => {
     const successMessage = { message: 'Search completed.', status: status.success };
     const { name } = req.query;
 
+    // Validate name parameter is passed
     if (!name) {
         return jsonErrorResponse(res, 'A search parameter (task name) must be provided', status.bad);
     }
@@ -323,10 +370,13 @@ const searchTasksByName = async (req, res) => {
     const searchKeyword = name.trim();
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
+        // Creating a regex object to perform a search
         const regexQuery = new RegExp(searchKeyword, 'i');
 
+        // Searches the collection for the document using the search keywork
         const searchResponse = await dbClient.collection(constants.taskCollection).findOne({ name: regexQuery });
 
         successMessage.data = searchResponse;
@@ -335,6 +385,7 @@ const searchTasksByName = async (req, res) => {
     } catch (error) {
         console.log(error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }
@@ -348,13 +399,16 @@ const searchTasksByName = async (req, res) => {
 const filterTasksByStatus = async (req, res) => {
     const { status: taskStatus } = req.params;
 
+    // Validate parameters
     if (!taskStatus) {
         return jsonErrorResponse(res, 'A status must be provided', status.bad);
     }
 
     try {
+        // Initialize mongo db connection
         await initMongoDBConnection();
 
+        // Filter the task collection using the status of a task
         const filterResponse = await dbClient.collection(constants.taskCollection).find({ status: taskStatus.trim() }).toArray();
 
         const successMessage = {
@@ -367,6 +421,7 @@ const filterTasksByStatus = async (req, res) => {
     } catch (error) {
         return jsonErrorResponse(res, 'An error occurred while filtering tasks', status.error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }
@@ -388,6 +443,7 @@ const sortTasks = async (req, res) => {
     const sortParameter = requestParams.sortParameter.trim();
 
     try {
+                // Initialize mongo db connection
         await initMongoDBConnection();
 
         const sortCriteria = {};
@@ -417,6 +473,7 @@ const sortTasks = async (req, res) => {
     } catch (error) {
         console.log(error);
     } finally {
+        // Close mongodb connection
         await endMongoConnection();
     }
 }

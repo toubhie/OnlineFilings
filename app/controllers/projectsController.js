@@ -51,6 +51,7 @@ const createProject = async (req, res) => {
       return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
     }
 
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     const data = {
@@ -77,6 +78,7 @@ const createProject = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while creating project', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 }
@@ -92,7 +94,7 @@ const updateProject = async (req, res) => {
   const successMessage = { status: 'success' };
   const { id: projectId } = req.params;
 
-  //Check if the project id is passed
+  // Check if the project id is passed
   if (!projectId) {
     return jsonErrorResponse(res, 'A project id must be provided', status.bad);
   }
@@ -111,6 +113,7 @@ const updateProject = async (req, res) => {
   }
 
   try {
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     // Check if ID exists
@@ -145,6 +148,7 @@ const updateProject = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 }
@@ -159,6 +163,7 @@ const getAllProjects = async (req, res) => {
   const successMessage = { status: 'success' };
 
   try {
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     const response = await dbClient.collection(constants.projectCollection).find({}).toArray();
@@ -173,6 +178,7 @@ const getAllProjects = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 }
@@ -194,6 +200,7 @@ const deleteProject = async (req, res) => {
   }
 
   try {
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     const projectId = req.params.id;
@@ -205,7 +212,7 @@ const deleteProject = async (req, res) => {
       return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
     }
 
-    // delete data
+    // Delete the data in the collection
     const deleteTask = await dbClient.collection(constants.projectCollection).deleteOne({ _id: new ObjectId(projectId) });
 
     if (deleteTask.deletedCount === 0) {
@@ -221,6 +228,7 @@ const deleteProject = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 }
@@ -243,6 +251,7 @@ const assignTaskToProject = async (req, res) => {
   }
 
   try {
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     const taskData = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
@@ -301,6 +310,7 @@ const assignTaskToProject = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 }
@@ -328,6 +338,7 @@ const moveTaskBetweenProjects = async (req, res) => {
   }
 
   try {
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     const task = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
@@ -392,6 +403,7 @@ const moveTaskBetweenProjects = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 
@@ -412,6 +424,7 @@ const filterTasksByProjectName = async (req, res) => {
   }
 
   try {
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     const filteredTasks = await dbClient.collection(constants.taskCollection)
@@ -431,6 +444,7 @@ const filterTasksByProjectName = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 }
@@ -452,6 +466,7 @@ const sortProjectsByDates = async (req, res) => {
   const sortParameter = queryParams.sortParameter.trim();
 
   try {
+    // Initialize mongo db connection
     await initMongoDBConnection();
 
     const sortCriteria = {};
@@ -476,6 +491,7 @@ const sortProjectsByDates = async (req, res) => {
     console.log(error);
     return jsonErrorResponse(res, 'An error occurred while sorting projects.', status.error);
   } finally {
+    // Close mongodb connection
     await endMongoConnection();
   }
 }
