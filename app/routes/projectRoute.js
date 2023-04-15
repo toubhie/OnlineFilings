@@ -19,7 +19,7 @@ router.get('/', getAllProjects);
 
 router.delete('/:id', deleteProject);
 
-router.post('/:projectId/tasks/:taskId', assignTaskToProject);
+router.post('/assign-task', assignTaskToProject);
 
 router.get('/:projectName/tasks', filterTasksByProjectName);
 

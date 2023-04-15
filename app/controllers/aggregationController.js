@@ -1,7 +1,4 @@
-import {
-    errorMessage,
-    status,
-} from '../utils/status';
+import { status } from '../utils/status';
 
 import { 
     getTodayStartTimeStamp,
@@ -11,8 +8,6 @@ import {
 import constants from '../utils/constants';
 
 import { getClient, endMongoConnection, initMongoDBConnection } from '../db/dbConnection';
-import { ObjectId } from 'mongodb';
-import moment from 'moment';
 
 const dbClient = getClient();
 
@@ -31,33 +26,69 @@ const getAllProjects = async (req, res) => {
     try {
         initMongoDBConnection();
 
-        const response = await dbClient.collection(constants.projectCollection).aggregate([
+        // select * from projects inner join tasks on t.projectId = p.id
+
+        const response = await dbClient.collection(constants.taskCollection).aggregate([
             {
               $lookup: {
                 from: "tasks",
-                localField: "_id",
-                foreignField: "projectId",
+                localField: "projectId",
+                foreignField: "_id",
                 as: "tasks"
               }
             },
             {
-              $unwind: "$tasks"
-            },
-            {
               $match: {
-                "tasks.dueDate": {
-                  $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                  $lte: new Date(new Date().setHours(23, 59, 59, 999))
-                }
+                "tasks.dueDate": { $gte: start, $lt: end }
+              }
+            }
+          ]);
+
+          console.log('response');
+          console.log(response);
+
+        successMessage.message = 'All projects';
+        successMessage.data = response;
+        successMessage.status = status.success;
+
+        res.status(status.success).send(successMessage);
+
+    } catch (error) {
+        console.log(error);
+    } finally {
+        endMongoConnection();
+    }
+}
+
+/**
+  * Method to list all the tasks that have a project with a due date set to “today”
+  * @param {object} req
+  * @param {object} res
+  * @returns {object} JSON object
+  */
+const getAllTasks = async (req, res) => {
+    let successMessage = { status: 'success' };
+
+    const start = getTodayStartTimeStamp();
+    const end = getTodayEndTimeStamp();
+
+    try {
+        initMongoDBConnection();
+
+        // select * from projects inner join tasks on t.projectId = p.id
+
+        const response = await dbClient.collection(constants.taskCollection).aggregate([
+            {
+              $lookup: {
+                from: "tasks",
+                localField: "projectId",
+                foreignField: "_id",
+                as: "tasks"
               }
             },
             {
-              $group: {
-                _id: "$_id",
-                name: { $first: "$name" },
-                description: { $first: "$description" },
-                startDate: { $first: "$startDate" },
-                dueDate: { $first: "$dueDate" }
+              $match: {
+                "tasks.dueDate": { $gte: start, $lt: end }
               }
             }
           ]);
@@ -79,5 +110,6 @@ const getAllProjects = async (req, res) => {
 }
 
 export {
-    getAllProjects
+    getAllProjects,
+    getAllTasks
 }; 

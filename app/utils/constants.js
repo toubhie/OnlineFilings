@@ -1,5 +1,4 @@
 const constants = {
-
     projectCollection: 'projects',
     taskCollection: 'tasks',
     
@@ -10,7 +9,7 @@ const constants = {
     statusInProgress : "in-progress",
     statusCompleted : "completed",
     statusCancelled : "cancelled",
-    statusPending : "pending",
+    statusPending : "pending"
 }
 
 export default constants;

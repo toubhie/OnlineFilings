@@ -1,7 +1,4 @@
-import {
-  errorMessage,
-  status,
-} from '../utils/status';
+import { status } from '../utils/status';
 
 import { getCurrentTimeStamp } from '../utils/helperFunctions';
 
@@ -12,6 +9,8 @@ import { ObjectId } from 'mongodb';
 import moment from 'moment';
 
 const dbClient = getClient();
+
+import { jsonErrorResponse } from '../utils/responseHelper';
 
 /**
   * Method to create a new project
@@ -24,32 +23,20 @@ const createProject = async (req, res) => {
   const requestData = req.body;
 
   if (requestData.name == null || requestData.name == undefined) {
-    errorMessage.message = 'A project name must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A project name must be provided', status.bad);
   }
 
   if (requestData.startDate == null || requestData.startDate == undefined) {
-    errorMessage.message = 'A start date must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A start date must be provided', status.bad);
   }
 
   if (requestData.dueDate == null || requestData.dueDate == undefined) {
-    errorMessage.message = 'An due date must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A due date must be provided', status.bad);
   }
 
   // Check is start date is greater due date
   if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
-    errorMessage.message = 'due date must be greater than start date';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
   }
 
   try {
@@ -73,10 +60,7 @@ const createProject = async (req, res) => {
 
       res.status(status.success).send(successMessage);
     } else {
-      errorMessage.message = 'An error occurred while creating project';
-      errorMessage.status = status.error;
-
-      return res.status(status.error).send(errorMessage);
+      return jsonErrorResponse(res, 'An error occurred while creating project', status.error);
     }
 
   } catch (error) {
@@ -98,46 +82,28 @@ const updateProject = async (req, res) => {
 
   //Check if the project id is passed
   if (req.params.id == null || req.params.id == undefined) {
-    errorMessage.message = 'A project id name must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A project id must be provided', status.bad);
   }
 
   if (requestData.name == null || requestData.name == undefined) {
-    errorMessage.message = 'A project name must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A project name must be provided', status.bad);
   }
 
   if (requestData.status == null || requestData.status == undefined) {
-    errorMessage.message = 'A project status must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A project status must be provided', status.bad);
   }
 
   if (requestData.startDate == null || requestData.startDate == undefined) {
-    errorMessage.message = 'A start date must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A start date must be provided', status.bad);
   }
 
   if (requestData.dueDate == null || requestData.dueDate == undefined) {
-    errorMessage.message = 'An due date must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A due date must be provided', status.bad);
   }
 
   // Check is start date is greater due date
   if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
-    errorMessage.message = 'due date must be greater than start date';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
   }
 
   try {
@@ -149,10 +115,7 @@ const updateProject = async (req, res) => {
     const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
     if (!checkIfProjectExist) {
-      errorMessage.message = `Project with id ${projectId} does not exist`;
-      errorMessage.status = status.bad;
-
-      return res.status(status.bad).send(errorMessage);
+      return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
     }
 
     const data = {
@@ -168,10 +131,7 @@ const updateProject = async (req, res) => {
 
     await dbClient.collection(constants.projectCollection).updateOne({ _id: new ObjectId(projectId) }, data, (err, collection) => {
       if (err) {
-        errorMessage.message = 'An error occurred while updating project';
-        errorMessage.status = status.error;
-
-        return res.status(status.error).send(errorMessage);
+        return jsonErrorResponse(res, 'An error occurred while updating project', status.error);
       } else {
         successMessage.message = 'Project updated successfully';
         successMessage.collection = collection;
@@ -227,10 +187,7 @@ const deleteProject = async (req, res) => {
 
   //Check if the project id is passed
   if (req.params.id == null || req.params.id == undefined) {
-    errorMessage.message = 'A project id name must be provided';
-    errorMessage.status = status.notfound;
-
-    return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A project id must be provided', status.bad);
   }
 
   try {
@@ -242,20 +199,14 @@ const deleteProject = async (req, res) => {
     const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
     if (!checkIfProjectExist) {
-      errorMessage.message = `Project with id ${projectId} does not exist`;
-      errorMessage.status = status.bad;
-
-      return res.status(status.bad).send(errorMessage);
+      return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
     }
 
     // delete data
     const deleteTask = await dbClient.collection(constants.projectCollection).deleteOne({ _id: new ObjectId(projectId) });
 
     if (!deleteTask) {
-      errorMessage.message = 'An error occurred while deleting project';
-      errorMessage.status = status.error;
-
-      return res.status(status.error).send(errorMessage);
+      return jsonErrorResponse(res, 'An error occurred while deleting project', status.error);
     } else {
       successMessage.message = 'Project deleted successfully';
       successMessage.projectId = deleteTask;
@@ -283,58 +234,55 @@ const assignTaskToProject = async (req, res) => {
 
   try {
     //Check if the task id is passed
-    if (req.params.taskId == null || req.params.taskId == undefined) {
-      errorMessage.message = 'A task id must be provided';
-      errorMessage.status = status.notfound;
-
-      return res.status(status.notfound).send(errorMessage);
+    if (requestData.taskId == null || requestData.taskId == undefined) {
+      return jsonErrorResponse(res, 'A task id must be provided', status.bad);
     }
 
     //Check if the project id is passed
-    if (req.params.projectId == null || req.params.projectId == undefined) {
-      errorMessage.message = 'A project id must be provided';
-      errorMessage.status = status.notfound;
-
-      return res.status(status.notfound).send(errorMessage);
+    if (requestData.projectId == null || requestData.projectId == undefined) {
+      return jsonErrorResponse(res, 'A project id must be provided', status.bad);
     }
 
     try {
       initMongoDBConnection();
 
-      const taskId = req.params.taskId;
-      const projectId = req.params.projectId;
+      const taskId = requestData.taskId;
+      const projectId = requestData.projectId;
 
       // Check if task id exists
       const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
       if (!checkIfTaskExist) {
-        errorMessage.message = `Task with id ${taskId} does not exist`;
-        errorMessage.status = status.bad;
-
-        return res.status(status.bad).send(errorMessage);
+        return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
       }
 
       // Check if project id exists
       const checkIfProjectExist = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(projectId) });
 
       if (!checkIfProjectExist) {
-        errorMessage.message = `Project with id ${projectId} does not exist`;
-        errorMessage.status = status.bad;
-
-        return res.status(status.bad).send(errorMessage);
+        return jsonErrorResponse(res, `Project with id ${projectId} does not exist`, status.notfound);
       }
 
-      const data = {
-        projectId: (requestData.projectId).trim(),
-        updatedAt: getCurrentTimeStamp(),
-      };
+      // const data = {
+      //   projectId: projectId,
+      //   updatedAt: getCurrentTimeStamp(),
+      // };
 
-      const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, data, (err, collection) => {
+      // const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, data, (err, collection) => {
+      //   if (err) {
+      //        return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
+      //   } else {
+      //     return collection;
+      //   }
+      // });
+
+
+      const taskData = { $push: { tasks: taskId } }
+
+      //Add task to task object in project collection
+      const updateProjectResponse = await dbClient.collection(constants.projectCollection).updateOne({ _id: new ObjectId(projectId) }, taskData, (err, collection) => {
         if (err) {
-          errorMessage.message = 'An error occurred while assigning task';
-          errorMessage.status = status.error;
-
-          return res.status(status.error).send(errorMessage);
+          return jsonErrorResponse(res, 'An error occurred while assigning task', status.error);
         } else {
           return collection;
         }
@@ -364,40 +312,32 @@ const filterTasksByProjectName = async (req, res) => {
   let successMessage = { status: 'success' };
   const queryParams = req.query;
 
-    if (queryParams.projectName == null || queryParams.projectName == undefined) {
-        errorMessage.message = 'A project name must be provided';
-        errorMessage.status = status.notfound;
+  if (queryParams.projectName == null || queryParams.projectName == undefined) {
+    return jsonErrorResponse(res, 'A project name must be provided', status.bad);
+  }
 
-        return res.status(status.notfound).send(errorMessage);
-    }
-
-    const projectName = (queryParams.projectName).trim();
+  const projectName = (queryParams.projectName).trim();
 
   try {
-      initMongoDBConnection();
+    initMongoDBConnection();
 
-      // Get project by 
+    const filterResponse = await dbClient.collection(constants.taskCollection).find({ status: statusQuery }).toArray(function (err, result) {
+      if (err) {
+        return jsonErrorResponse(res, 'An error occurred while filtering task', status.error);
+      } else {
+        return result;
+      }
+    });
 
-      const filterResponse = await dbClient.collection(constants.taskCollection).find({ status: statusQuery }).toArray(function (err, result) {
-          if (err) {
-              errorMessage.message = 'An error occurred while filtering task';
-              errorMessage.status = status.error;
+    successMessage.message = 'Tasks successfully filtered.';
+    successMessage.data = filterResponse;
+    successMessage.status = status.success;
 
-              return res.status(status.error).send(errorMessage);
-          } else {
-              return result;
-          }
-      });
-     
-      successMessage.message = 'Tasks successfully filtered.';
-      successMessage.data = filterResponse;
-      successMessage.status = status.success;
-
-      res.status(status.success).send(successMessage);
+    res.status(status.success).send(successMessage);
   } catch (error) {
-      console.log(error);
+    console.log(error);
   } finally {
-      endMongoConnection();
+    endMongoConnection();
   }
 }
 
@@ -412,44 +352,38 @@ const sortProjectsByDates = async (req, res) => {
   const queryParams = req.query;
 
   if (queryParams.sortParameter == null || queryParams.sortParameter == undefined) {
-      errorMessage.message = 'A sort parameter must be provided';
-      errorMessage.status = status.notfound;
-
-      return res.status(status.notfound).send(errorMessage);
+    return jsonErrorResponse(res, 'A sort parameter must be provided', status.bad);
   }
 
   const sortParameter = (queryParams.sortParameter).trim();
 
   try {
-      initMongoDBConnection();
+    initMongoDBConnection();
 
-      const sortCriteria = {};
+    const sortCriteria = {};
 
-      if (sortParameter === "startDate") {
-          sortCriteria.startDate = 1; // sort by ascending start date
-      } else if (sortParameter === "dueDate") {
-          sortCriteria.dueDate = -1; // sort by descending due date
-      } else {
-          errorMessage.message = `Invalid sort parameter. Can only be 'startDate' or 'dueDate'`;
-          errorMessage.status = status.bad;
+    if (sortParameter === "startDate") {
+      sortCriteria.startDate = 1; // sort by ascending start date
+    } else if (sortParameter === "dueDate") {
+      sortCriteria.dueDate = -1; // sort by descending due date
+    } else {
+      return jsonErrorResponse(res, `Invalid sort parameter. Can only be 'startDate' or 'dueDate'`, status.bad);
+    }
 
-          return res.status(status.bad).send(errorMessage);
-      }
+    const sortResponse = await dbClient.collection(constants.projectCollection).find().sort(sortCriteria).toArray(function (err, result) {
+      return err || result;
+    });
 
-      const sortResponse = await dbClient.collection(constants.projectCollection).find().sort(sortCriteria).toArray(function (err, result) {
-          return err || result;
-      });
-     
-      successMessage.message = 'Projects sorted successfully.';
-      successMessage.data = sortResponse;
-      successMessage.sortCriteria = sortParameter;
-      successMessage.status = status.success;
+    successMessage.message = 'Projects sorted successfully.';
+    successMessage.data = sortResponse;
+    successMessage.sortCriteria = sortParameter;
+    successMessage.status = status.success;
 
-      res.status(status.success).send(successMessage);
+    res.status(status.success).send(successMessage);
   } catch (error) {
-      console.log(error);
+    console.log(error);
   } finally {
-      endMongoConnection();
+    endMongoConnection();
   }
 }
 

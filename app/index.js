@@ -1,5 +1,3 @@
-//server.js
-
 import express from 'express';
 import 'babel-polyfill';
 import cors from 'cors';
@@ -8,10 +6,10 @@ import projectRoute from './routes/projectRoute';
 import taskRoute from './routes/taskRoute';
 import aggregationRoute from './routes/aggregationRoute';
 import path from 'path';
-import constants from './utils/constants';
 import { getCurrentTimeStamp } from './utils/helperFunctions';
 import { initMongoDBConnection } from './db/dbConnection';
-
+import { status } from './utils/status';
+import { jsonErrorResponse } from './utils/responseHelper';
 
 const app = async () => {
   
@@ -42,6 +40,10 @@ const app = async () => {
   app.use('/api/v1/projects', projectRoute);
   app.use('/api/v1/tasks', taskRoute);
   app.use('/api/v1/aggregation', aggregationRoute);
+
+  app.use("*", (req, res) => {
+    return jsonErrorResponse(res, `Invalid Request`, status.bad);
+  })
 
   initMongoDBConnection();
 

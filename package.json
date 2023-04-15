@@ -18,9 +18,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "create-dev-tables": "babel-node ./app/db/dev/dbConnection createAllTables",
-    "start-dev": "nodemon --watch . --exec babel-node -- ./app/server",
-    "start": "node ./dist-server/server",
+    "start-dev": "nodemon --watch . --exec babel-node -- ./app/index",
+    "start": "node ./dist-server/index",
     "transpile": "babel ./app --out-dir dist-server",
     "clean": "rimraf dist-server",
     "move-env": "ncp .env ./dist-server/.env",

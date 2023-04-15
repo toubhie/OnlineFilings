@@ -1,7 +1,4 @@
-import {
-    errorMessage,
-    status,
-} from '../utils/status';
+import { status } from '../utils/status';
 
 import { getCurrentTimeStamp } from '../utils/helperFunctions';
 
@@ -12,6 +9,8 @@ import { ObjectId } from 'mongodb';
 import moment from 'moment';
 
 const dbClient = getClient();
+
+import { jsonErrorResponse } from '../utils/responseHelper';
 
 
 /**
@@ -25,53 +24,32 @@ const createTask = async (req, res) => {
     const requestData = req.body;
 
     if (requestData.name == null || requestData.name == undefined) {
-        errorMessage.message = 'A task name must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A task name must be provided', status.bad);
     }
 
     if (requestData.startDate == null || requestData.startDate == undefined) {
-        errorMessage.message = 'A start date must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A start date must be provided', status.bad);
     }
 
     if (requestData.dueDate == null || requestData.dueDate == undefined) {
-        errorMessage.message = 'An due date must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A due date must be provided', status.bad);
     }
 
     // Check is start date is greater due date
     if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
-        errorMessage.message = 'due date must be greater than start date';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
     }
 
     if (requestData.priority == null || requestData.priority == undefined) {
-        errorMessage.message = 'A priority must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A priority must be provided', status.bad);
     }
 
     if (requestData.assignedTo == null || requestData.assignedTo == undefined) {
-        errorMessage.message = 'An assignee must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'An assignee must be provided', status.bad);
     }
 
     if (requestData.projectId == null || requestData.projectId == undefined) {
-        errorMessage.message = 'A project Id must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A project Id must be provided', status.bad);
     }
 
     try {
@@ -98,10 +76,7 @@ const createTask = async (req, res) => {
 
             res.status(status.success).send(successMessage);
         } else {
-            errorMessage.message = 'An error occurred while creating the task';
-            errorMessage.status = status.error;
-
-            return res.status(status.error).send(errorMessage);
+            return jsonErrorResponse(res, 'An error occurred while creating the task', status.error);
         }
 
     } catch (error) {
@@ -123,39 +98,24 @@ const updateTask = async (req, res) => {
 
     //Check if the task id is passed
     if (req.params.id == null || req.params.id == undefined) {
-        errorMessage.message = 'A task id name must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A task id must be provided', status.bad);
     }
 
     if (requestData.name == null || requestData.name == undefined) {
-        errorMessage.message = 'A task name must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A task name must be provided', status.bad);
     }
 
     if (requestData.startDate == null || requestData.startDate == undefined) {
-        errorMessage.message = 'A start date must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A start date must be provided', status.bad);
     }
 
     if (requestData.dueDate == null || requestData.dueDate == undefined) {
-        errorMessage.message = 'An due date must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A due date must be provided', status.bad);
     }
 
     // Check is start date is greater due date
     if (moment(requestData.startDate).isAfter(moment(requestData.dueDate))) {
-        errorMessage.message = 'due date must be greater than start date';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'The due date must be greater than the start date', status.bad);
     }
 
     try {
@@ -167,10 +127,7 @@ const updateTask = async (req, res) => {
         const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
         if (!checkIfTaskExist) {
-            errorMessage.message = `Task with id ${taskId} does not exist`;
-            errorMessage.status = status.bad;
-
-            return res.status(status.bad).send(errorMessage);
+            return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
         }
 
         const data = {
@@ -187,10 +144,7 @@ const updateTask = async (req, res) => {
 
         const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, data, (err, collection) => {
             if (err) {
-                errorMessage.message = 'An error occurred while updating task';
-                errorMessage.status = status.error;
-
-                return res.status(status.error).send(errorMessage);
+                return jsonErrorResponse(res, 'An error occurred while updating task', status.error);
             } else {
                 return collection;
             }
@@ -247,10 +201,7 @@ const deleteTask = async (req, res) => {
 
     //Check if the task id is passed
     if (req.params.id == null || req.params.id == undefined) {
-        errorMessage.message = 'A task id name must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A task id name must be provided', status.bad);
     }
 
     try {
@@ -262,20 +213,14 @@ const deleteTask = async (req, res) => {
         const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
         if (!checkIfTaskExist) {
-            errorMessage.message = `Task with id ${taskId} does not exist`;
-            errorMessage.status = status.bad;
-
-            return res.status(status.bad).send(errorMessage);
+            return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
         }
 
         // delete data
         const deleteTask = await dbClient.collection(constants.taskCollection).deleteOne({ _id: new ObjectId(taskId) });
 
         if (!deleteTask) {
-            errorMessage.message = 'An error occurred while deleting task';
-            errorMessage.status = status.error;
-
-            return res.status(status.error).send(errorMessage);
+            return jsonErrorResponse(res, 'An error occurred while deleting task', status.error);
         } else {
             successMessage.message = 'Task deleted successfully';
             successMessage.taskId = taskId;
@@ -303,17 +248,11 @@ const changeStatusOfTask = async (req, res) => {
 
     //Check if the task id is passed
     if (req.params.id == null || req.params.id == undefined) {
-        errorMessage.message = 'A task id name must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A task id must be provided', status.bad);
     }
 
     if (requestData.status == null || requestData.status == undefined) {
-        errorMessage.message = 'A task status must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A task status must be provided', status.bad);
     }
 
     try {
@@ -325,10 +264,7 @@ const changeStatusOfTask = async (req, res) => {
         const checkIfTaskExist = await dbClient.collection(constants.taskCollection).findOne({ _id: new ObjectId(taskId) });
 
         if (!checkIfTaskExist) {
-            errorMessage.message = `Task with id ${taskId} does not exist`;
-            errorMessage.status = status.bad;
-
-            return res.status(status.bad).send(errorMessage);
+            return jsonErrorResponse(res, `Task with id ${taskId} does not exist`, status.notfound);
         }
 
         const data = {
@@ -340,10 +276,7 @@ const changeStatusOfTask = async (req, res) => {
 
         const updateResponse = await dbClient.collection(constants.taskCollection).updateOne({ _id: new ObjectId(taskId) }, data, (err, collection) => {
             if (err) {
-                errorMessage.message = 'An error occurred while changing status of task';
-                errorMessage.status = status.error;
-
-                return res.status(status.error).send(errorMessage);
+                return jsonErrorResponse(res, 'An error occurred while changing status of task', status.error);
             } else {
                 return collection;
             }
@@ -372,10 +305,7 @@ const searchTasksByName = async (req, res) => {
     const queryParams = req.query;
 
     if (queryParams.name == null || queryParams.name == undefined) {
-        errorMessage.message = 'A search parameter (name) must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A search parameter (task name) must be provided', status.bad);
     }
 
     const searchKeyword = (queryParams.name).trim();
@@ -384,11 +314,11 @@ const searchTasksByName = async (req, res) => {
         initMongoDBConnection();
 
         const regexQuery = new RegExp(searchKeyword, 'i');
-        
-        const searchResponse = await dbClient.collection(constants.taskCollection).find({ name: regexQuery }).toArray(function (err, result){
+
+        const searchResponse = await dbClient.collection(constants.taskCollection).find({ name: regexQuery }).toArray(function (err, result) {
             return err || result;
         });
-       
+
         successMessage.message = 'Search completed.';
         successMessage.data = searchResponse;
         successMessage.status = status.success;
@@ -412,10 +342,7 @@ const filterTasksByStatus = async (req, res) => {
     const requestParams = req.params;
 
     if (requestParams.status == null || requestParams.status == undefined) {
-        errorMessage.message = 'A status must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A status must be provided', status.bad);
     }
 
     const statusQuery = (requestParams.status).trim();
@@ -425,15 +352,12 @@ const filterTasksByStatus = async (req, res) => {
 
         const filterResponse = await dbClient.collection(constants.taskCollection).find({ status: statusQuery }).toArray(function (err, result) {
             if (err) {
-                errorMessage.message = 'An error occurred while filtering task';
-                errorMessage.status = status.error;
-
-                return res.status(status.error).send(errorMessage);
+                return jsonErrorResponse(res, 'An error occurred while filtering task', status.error);
             } else {
                 return result;
             }
         });
-       
+
         successMessage.message = 'Tasks successfully filtered.';
         successMessage.data = filterResponse;
         successMessage.status = status.success;
@@ -457,10 +381,7 @@ const sortTasks = async (req, res) => {
     const requestParams = req.params;
 
     if (requestParams.sortParameter == null || requestParams.sortParameter == undefined) {
-        errorMessage.message = 'A sort parameter must be provided';
-        errorMessage.status = status.notfound;
-
-        return res.status(status.notfound).send(errorMessage);
+        return jsonErrorResponse(res, 'A sort parameter must be provided', status.bad);
     }
 
     const sortParameter = (requestParams.sortParameter).trim();
@@ -477,16 +398,13 @@ const sortTasks = async (req, res) => {
         } else if (sortParameter === "dateCompleted") {
             sortCriteria.dateCompleted = -1; // sort by descending date completed
         } else {
-            errorMessage.message = `Invalid sort parameter. Can only be 'startDate', 'dueDate' or 'dateCompleted'`;
-            errorMessage.status = status.bad;
-
-            return res.status(status.bad).send(errorMessage);
+            return jsonErrorResponse(res, `Invalid sort parameter. Can only be 'startDate', 'dueDate' or 'dateCompleted'`, status.bad);
         }
 
         const sortResponse = await dbClient.collection(constants.taskCollection).find().sort(sortCriteria).toArray(function (err, result) {
             return err || result;
         });
-       
+
         successMessage.message = 'Tasks sorted successfully.';
         successMessage.data = sortResponse;
         successMessage.sortCriteria = sortParameter;
