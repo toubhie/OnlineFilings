@@ -269,7 +269,7 @@ const assignTaskToProject = async (req, res) => {
       }
 
       const newDataForTaskCollection = {
-        $set : {
+        $set: {
           project: {
             projectId: projectId,
             projectName: projectData.name
@@ -364,12 +364,12 @@ const moveTaskBetweenProjects = async (req, res) => {
         return jsonErrorResponse(res, `Source project with id ${sourceProjectId} does not exist`, status.notfound);
       }
 
-       // Check if desctination project id exists
-       const destinationProjectData = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(destinationProjectId) });
+      // Check if desctination project id exists
+      const destinationProjectData = await dbClient.collection(constants.projectCollection).findOne({ _id: new ObjectId(destinationProjectId) });
 
-       if (!destinationProjectData) {
-         return jsonErrorResponse(res, `Destination project with id ${destinationProjectId} does not exist`, status.notfound);
-       }
+      if (!destinationProjectData) {
+        return jsonErrorResponse(res, `Destination project with id ${destinationProjectId} does not exist`, status.notfound);
+      }
 
       // Check if the task is in the source project
       if (taskData.project !== undefined && taskData.project.projectId !== sourceProjectId) {
@@ -411,7 +411,7 @@ const moveTaskBetweenProjects = async (req, res) => {
 
       //Update task collection with new project id
       const newDataForTaskCollection = {
-        $set : {
+        $set: {
           project: {
             projectId: destinationProjectId,
             projectName: destinationProjectData.name

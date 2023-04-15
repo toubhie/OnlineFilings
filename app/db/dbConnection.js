@@ -36,8 +36,8 @@ const getClient = () => {
   return client.db(env.database); // selecting the db
 };
 
-export { 
-  initMongoDBConnection, 
+export {
+  initMongoDBConnection,
   endMongoConnection,
-  getClient 
+  getClient
 };

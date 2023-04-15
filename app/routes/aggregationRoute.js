@@ -1,5 +1,5 @@
 import express from 'express';
-import { 
+import {
     getAllProjects,
     getAllTasks
 } from '../controllers/aggregationController';

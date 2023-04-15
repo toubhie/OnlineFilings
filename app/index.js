@@ -12,7 +12,7 @@ import { status } from './utils/status';
 import { jsonErrorResponse } from './utils/responseHelper';
 
 const app = async () => {
-  
+
   const app = express();
 
   app.get('/api/v1/health', function (req, res) {
@@ -29,8 +29,8 @@ const app = async () => {
   app.use(cors());
   // Add middleware for parsing JSON and urlencoded data and populating `req.body`
   var bodyParser = require('body-parser');
-  app.use(bodyParser.json({limit: "5000mb"}));
-  app.use(bodyParser.urlencoded({limit: "5000mb", extended: true, parameterLimit:50000}));
+  app.use(bodyParser.json({ limit: "5000mb" }));
+  app.use(bodyParser.urlencoded({ limit: "5000mb", extended: true, parameterLimit: 50000 }));
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());

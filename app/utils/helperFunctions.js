@@ -42,7 +42,7 @@ const checkIfNullOrUndefined = (input) => {
   if (input === undefined || input === null) {
     input = '';
   }
-  
+
   return input;
 };
 

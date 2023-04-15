@@ -1,8 +1,8 @@
 import { status } from '../utils/status';
 
-import { 
-    getTodayStartTimeStamp,
-    getTodayEndTimeStamp 
+import {
+  getTodayStartTimeStamp,
+  getTodayEndTimeStamp
 } from '../utils/helperFunctions';
 
 import constants from '../utils/constants';
@@ -18,46 +18,46 @@ const dbClient = getClient();
   * @returns {object} JSON object
   */
 const getAllProjects = async (req, res) => {
-    let successMessage = { status: 'success' };
+  let successMessage = { status: 'success' };
 
-    const start = getTodayStartTimeStamp();
-    const end = getTodayEndTimeStamp();
+  const start = getTodayStartTimeStamp();
+  const end = getTodayEndTimeStamp();
 
-    try {
-        initMongoDBConnection();
+  try {
+    initMongoDBConnection();
 
-        // select * from projects inner join tasks on t.projectId = p.id
+    // select * from projects inner join tasks on t.projectId = p.id
 
-        const response = await dbClient.collection(constants.taskCollection).aggregate([
-            {
-              $lookup: {
-                from: "tasks",
-                localField: "projectId",
-                foreignField: "_id",
-                as: "tasks"
-              }
-            },
-            {
-              $match: {
-                "tasks.dueDate": { $gte: start, $lt: end }
-              }
-            }
-          ]);
+    const response = await dbClient.collection(constants.taskCollection).aggregate([
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "projectId",
+          foreignField: "_id",
+          as: "tasks"
+        }
+      },
+      {
+        $match: {
+          "tasks.dueDate": { $gte: start, $lt: end }
+        }
+      }
+    ]);
 
-          console.log('response');
-          console.log(response);
+    console.log('response');
+    console.log(response);
 
-        successMessage.message = 'All projects';
-        successMessage.data = response;
-        successMessage.status = status.success;
+    successMessage.message = 'All projects';
+    successMessage.data = response;
+    successMessage.status = status.success;
 
-        res.status(status.success).send(successMessage);
+    res.status(status.success).send(successMessage);
 
-    } catch (error) {
-        console.log(error);
-    } finally {
-        endMongoConnection();
-    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    endMongoConnection();
+  }
 }
 
 /**
@@ -67,49 +67,49 @@ const getAllProjects = async (req, res) => {
   * @returns {object} JSON object
   */
 const getAllTasks = async (req, res) => {
-    let successMessage = { status: 'success' };
+  let successMessage = { status: 'success' };
 
-    const start = getTodayStartTimeStamp();
-    const end = getTodayEndTimeStamp();
+  const start = getTodayStartTimeStamp();
+  const end = getTodayEndTimeStamp();
 
-    try {
-        initMongoDBConnection();
+  try {
+    initMongoDBConnection();
 
-        // select * from projects inner join tasks on t.projectId = p.id
+    // select * from projects inner join tasks on t.projectId = p.id
 
-        const response = await dbClient.collection(constants.taskCollection).aggregate([
-            {
-              $lookup: {
-                from: "tasks",
-                localField: "projectId",
-                foreignField: "_id",
-                as: "tasks"
-              }
-            },
-            {
-              $match: {
-                "tasks.dueDate": { $gte: start, $lt: end }
-              }
-            }
-          ]);
+    const response = await dbClient.collection(constants.taskCollection).aggregate([
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "projectId",
+          foreignField: "_id",
+          as: "tasks"
+        }
+      },
+      {
+        $match: {
+          "tasks.dueDate": { $gte: start, $lt: end }
+        }
+      }
+    ]);
 
-          console.log('response');
-          console.log(response);
+    console.log('response');
+    console.log(response);
 
-        successMessage.message = 'All projects';
-        successMessage.data = response;
-        successMessage.status = status.success;
+    successMessage.message = 'All projects';
+    successMessage.data = response;
+    successMessage.status = status.success;
 
-        res.status(status.success).send(successMessage);
+    res.status(status.success).send(successMessage);
 
-    } catch (error) {
-        console.log(error);
-    } finally {
-        endMongoConnection();
-    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    endMongoConnection();
+  }
 }
 
 export {
-    getAllProjects,
-    getAllTasks
+  getAllProjects,
+  getAllTasks
 }; 
